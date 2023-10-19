@@ -1,0 +1,28 @@
+{
+    "name": "grafana config",
+    "description": "grafana config",
+    "version": "1.0",
+    "type": "config",
+    "plots": [
+        {
+            "id": "1",
+            "title": "Pie Chart",
+            "type": "pie",
+            "parts": [
+                "one",
+                "two",
+                "three"
+            ]
+        },
+        {
+            "id": "1",
+            "title": "Scatter Chart",
+            "type": "pie",
+            "x": "one",
+            "y": [
+                "two",
+                "three"
+            ]
+        }
+    ]
+}
