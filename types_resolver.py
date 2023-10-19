@@ -59,8 +59,21 @@ class TypesResolver:
         Returns:
         The type of the path
 
+        Example:
 
+        >>> with TypesResolver() as tr:
+        >>>     tr.resolve("AirQualityObserved", "address", "url")
+        >>> ['addressCountry', 'addressLocality', 'addressRegion', 'district', 'postOfficeBoxNumber', 'postalCode', 'streetAddress', 'streetNr']
+        >>>
+        >>> with TypesResolver() as tr:
+        >>>     tr.resolve("AirQualityObserved", "address.addressCountry", "url")
+        >>> 'String'
+        >>>
+        >>> with TypesResolver() as tr:
+        >>>     tr.resolve("AirQualityObserved", "Error", "url")
+        >>> # None
         """
+
         if result := self._resolve_specs(type, path):
             return result
 
