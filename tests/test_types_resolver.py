@@ -1,4 +1,4 @@
-from types_resolver import TypesResolver
+from grafana_dashboards.types_resolver import TypesResolver
 
 def test_some_cases():
     with TypesResolver() as tr:
