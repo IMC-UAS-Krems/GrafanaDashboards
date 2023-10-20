@@ -1,4 +1,4 @@
-from grafana_dashboards.types_resolver import TypesResolver
+from grafana_dashboards.types_resolver import TypesResolver, List
 
 def test_some_cases():
     with TypesResolver() as tr:
@@ -12,7 +12,7 @@ def test_some_cases():
             "AirQualityObserved",
             "location",
             data_source_url="https://data.iiss.at/dataskop/fiwarenosec/v2/entities?type=AirQualityObserved",
-        ) == "Array"
+        ) == List.Number
 
         result = tr.resolve(
             "AirQualityObserved",

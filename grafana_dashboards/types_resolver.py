@@ -1,4 +1,5 @@
 from typing import Literal, TypeAlias
+from enum import Enum
 
 from yaml import load
 
@@ -9,12 +10,17 @@ except ImportError:
 
 import requests
 
-Type: TypeAlias = Literal["Number", "String", "Array"]
-
+Type: TypeAlias = Literal["Number", "String", "Time", "Boolean"]
 
 class Keys(list):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
+
+class List(Enum):
+    Number = "Number"
+    String = "String"
+    Time = "Time"
+    Boolean = "Boolean"
+
 
 
 class TypesResolver:
@@ -22,7 +28,7 @@ class TypesResolver:
     This class is used to resolve the type of a given path in a given type or data source
 
     >>> with TypesResolver() as tr:
-    >>>     tr.resolve("AirQualityObserved", "stationName", "url")
+    >>>     tr.resolve("fiware_model_type", "path", "url")
     """
 
     def __init__(self) -> None:
@@ -43,9 +49,9 @@ class TypesResolver:
         self._spec_cache = {}
         self._data_cache = {}
 
-    def resolve(self, type: str, path: str, data_source_url: str) -> Keys | Type | None:
+    def resolve(self, type: str, path: str, data_source_url: str) -> List | Keys | Type | None:
         """
-        Tries to resolve the type of a given path in a given type or data source.
+        Tries to resolve the type of a given path in a given type or data source. First, it tries to resolve a type from the model, if it fails, it tries to resolve it from the first item in the data source
 
         Returns `None` if the path could not be resolved, else any of the following:
         - Keys(list): If the path is a key of a dictionary
@@ -82,7 +88,9 @@ class TypesResolver:
 
         return None
 
-    def _resolve_specs(self, type: str, path: str) -> Keys | Type | None:
+    def _resolve_specs(self, type: str, path: str) -> List | Keys | Type | None:
+        """"""
+
         specs = self._get_specs(type)
         to_return = None
 
@@ -97,7 +105,9 @@ class TypesResolver:
 
         return to_return
 
-    def _resolve_data(self, url: str, path: str) -> Keys | Type | None:
+    def _resolve_data(self, url: str, path: str) -> List | Keys | Type | None:
+        """"""
+
         data = self._get_data(url)
         to_return = None
 
@@ -110,21 +120,29 @@ class TypesResolver:
         return to_return
 
     def _get_specs(self, type: str) -> dict:
+        """"""
+
         if not self._spec_cache.get(type):
             r = requests.get(self._urls[type])
             specs = load(r.text, Loader=Loader)
             self._spec_cache[type] = specs[type]["properties"]
+
         return self._spec_cache[type]
 
     def _get_data(self, url: str) -> dict:
+        """"""
+
         if not self._data_cache.get(url):
             r = requests.get(url).json()[0]
             self._data_cache[url] = r
+
         return self._data_cache[url]
 
     def _resolve_type_from_specs(
         self, specs: dict, path: str
-    ) -> tuple[dict, Type | None | Keys]:
+    ) -> tuple[dict, Type | None | Keys | List]:
+        """"""
+
         specs = specs.get(path) or specs.get(path.lower().replace(".", ""))
 
         if not specs:
@@ -135,12 +153,31 @@ class TypesResolver:
             specs = specs["properties"]
             return specs, to_return
 
-        to_return = specs["type"].capitalize()
-        return specs, to_return
+        if specs["type"] == "array":
+            if specs["items"]["type"] == "number":
+                return specs, List.Number
+
+            if specs["items"]["type"] == "string":
+                return specs, List.String
+
+            return specs, None
+
+        if specs["type"] == "string":
+            if specs.get("format") == "date-time":
+                return specs, "Time"
+
+            return specs, "String"
+
+        if specs["type"] == "number":
+            return specs, "Number"
+
+        return specs, None
 
     def _resolve_type_from_data(
         self, data: dict, path: str
-    ) -> tuple[dict, Type | Keys | None]:
+    ) -> tuple[dict, Type | Keys | List | None]:
+        """"""
+
         value = data.get(path)
 
         if not value:
@@ -155,27 +192,47 @@ class TypesResolver:
             return data, "String"
 
         elif type == "DateTime":
-            return data, "String"
+            return data, "Time"
 
         elif type == "List":
-            return data, "Array"
+            value = value["value"]
+
+            if isinstance(value[0], int):
+                return data, List.Number
+
+            if isinstance(value[0], str):
+                return data, List.String
+
+            return data, None
 
         elif type == "URL":
             return data, "String"
 
         elif type == "geo:json":
-            return data, "Array"
+            return data, List.Number
 
         elif type is None:
             if isinstance(value, dict):
                 return value, Keys(value.keys())
+
             if isinstance(value, list):
-                return value[0], "Array"
+
+                if isinstance(value[0], int):
+                    return data, List.Number
+
+                if isinstance(value[0], str):
+                    return data, List.String
+
+                return data, None
+
             if isinstance(value, str):
                 return data, "String"
+
             if isinstance(value, int):
                 return data, "Number"
+
             return data, None
+
         else:
             value = value["value"]
 
@@ -183,13 +240,19 @@ class TypesResolver:
                 return value, Keys(value.keys())
 
             if isinstance(value, list):
-                return value[0], "Array"
+                if isinstance(value[0], int):
+                    return data, List.Number
+
+                if isinstance(value[0], str):
+                    return data, List.String
+
+                return data, None
 
             return data, None
 
-    def _parse_standart(self, path: str) -> Type | None:
+    def _parse_standart(self, path: str) -> List | None:
         if path.lower() == "location":
-            return "Array"
+            return List.Number
 
 
 if __name__ == "__main__":
