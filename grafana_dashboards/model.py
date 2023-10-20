@@ -1,15 +1,6 @@
-from __future__ import annotations
-
 from typing import TypeAlias
 
 from pydantic import BaseModel
-
-
-class Config(BaseModel):
-    service: Service
-    data_sources: dict[str, Datasource]
-    application: Application
-    deployment: dict[str, dict[str, Deployment]]
 
 
 class Version(BaseModel):
@@ -81,3 +72,10 @@ class Deployment(BaseModel):
     uri: str
     port: int
     type: str
+
+
+class Config(BaseModel):
+    service: Service
+    data_sources: dict[str, Datasource]
+    application: Application
+    deployment: dict[str, dict[str, Deployment]]
