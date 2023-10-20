@@ -1,11 +1,10 @@
 import logging
 from typing import TypeAlias
 
+import logging_setup  # will be executed on import
 import uvicorn
 from fastapi import FastAPI
-
 from model import Config
-import logging_setup # will be executed on import
 
 GrafanaModel: TypeAlias = dict
 

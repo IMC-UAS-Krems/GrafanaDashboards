@@ -12,15 +12,16 @@ import requests
 
 Type: TypeAlias = Literal["Number", "String", "Time", "Boolean"]
 
+
 class Keys(list):
     pass
+
 
 class List(Enum):
     Number = "Number"
     String = "String"
     Time = "Time"
     Boolean = "Boolean"
-
 
 
 class TypesResolver:
@@ -49,7 +50,9 @@ class TypesResolver:
         self._spec_cache = {}
         self._data_cache = {}
 
-    def resolve(self, type: str, path: str, data_source_url: str) -> List | Keys | Type | None:
+    def resolve(
+        self, type: str, path: str, data_source_url: str
+    ) -> List | Keys | Type | None:
         """
         Tries to resolve the type of a given path in a given type or data source. First, it tries to resolve a type from the model, if it fails, it tries to resolve it from the first item in the data source
 
@@ -216,7 +219,6 @@ class TypesResolver:
                 return value, Keys(value.keys())
 
             if isinstance(value, list):
-
                 if isinstance(value[0], int):
                     return data, List.Number
 
