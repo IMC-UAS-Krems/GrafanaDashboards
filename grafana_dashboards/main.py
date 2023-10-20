@@ -1,4 +1,3 @@
-from os import walk
 from typing import TypeAlias
 
 import uvicorn
