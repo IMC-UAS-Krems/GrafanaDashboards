@@ -11,7 +11,7 @@ class Version(BaseModel):
 
 class Service(BaseModel):
     title: str
-    scope: str
+    scope: str  # Fiware scope
     version: Version
 
 
@@ -20,8 +20,8 @@ class Query(BaseModel):
 
 
 class Datasource(BaseModel):
-    provider: str
-    type: str
+    provider: str  # Fiware
+    type: str  # ignore
     uri: str
     query: Query
 
@@ -30,7 +30,7 @@ class GeoMap(BaseModel):
     type: str
     source: str
     data: list[str]
-    area: str | None
+    area: str | None  # center coordinates (https://nominatim.org/)
 
 
 class PieChart(BaseModel):
@@ -43,19 +43,19 @@ class PieChart(BaseModel):
 class BarChart(BaseModel):
     type: str
     source: str
-    traces: list[str]
+    traces: list[str]  # first trace is x axis
 
 
 class TimeSeries(BaseModel):
     type: str
     source: str
-    traces: list[str]
+    traces: list[str]  # first trace is x axis
 
 
 class XYChart(BaseModel):
     type: str
     source: str
-    traces: list[str]
+    traces: list[str]  # first trace is x axis
 
 
 Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart
