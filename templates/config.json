@@ -1,0 +1,12 @@
+{
+    "name": "grafana config",
+    "description": "grafana config",
+    "version": "1.0",
+    "type": "config",
+    "plots": [
+        {% for plot in config.plots %}
+            {{plot | jsonify}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+
+}

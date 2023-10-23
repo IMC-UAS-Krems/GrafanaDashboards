@@ -1,0 +1,7 @@
+{
+    "id": "1",
+    "title": {{title | jsonify}},
+    "type": "pie",
+    "parts": {{parts | jsonify}}
+
+}
