@@ -10,7 +10,7 @@ except ImportError:
 
 import requests
 
-Type: TypeAlias = Literal["Number", "String", "Time", "Boolean"]
+Type: TypeAlias = Literal["number", "string", "time", "boolean"]
 
 
 class Keys(list):
@@ -18,10 +18,10 @@ class Keys(list):
 
 
 class List(Enum):
-    Number = "Number"
-    String = "String"
-    Time = "Time"
-    Boolean = "Boolean"
+    Number = "number"
+    String = "string"
+    Time = "time"
+    Boolean = "boolean"
 
 
 class TypesResolver:
@@ -86,7 +86,7 @@ class TypesResolver:
         if result := self._resolve_specs(type, path):
             return result
 
-        if result := self._resolve_data(data_source_url, path):
+        if result := self._resolve_data(data_source_url, path, type):
             return result
 
         return None
@@ -108,10 +108,12 @@ class TypesResolver:
 
         return to_return
 
-    def _resolve_data(self, url: str, path: str) -> List | Keys | Type | None:
+    def _resolve_data(
+        self, url: str, path: str, type: str
+    ) -> List | Keys | Type | None:
         """"""
 
-        data = self._get_data(url)
+        data = self._get_data(url, type)
         to_return = None
 
         for p in path.split("."):
@@ -132,11 +134,11 @@ class TypesResolver:
 
         return self._spec_cache[type]
 
-    def _get_data(self, url: str) -> dict:
+    def _get_data(self, url: str, type: str) -> dict:
         """"""
 
         if not self._data_cache.get(url):
-            r = requests.get(url).json()[0]
+            r = requests.get(url, params={"type": type}).json()[0]
             self._data_cache[url] = r
 
         return self._data_cache[url]
@@ -168,7 +170,7 @@ class TypesResolver:
         # as in grafana json these are starting with a small letter i changed it
         if specs["type"] == "string":
             if specs.get("format") == "date-time":
-                return specs, "time" 
+                return specs, "time"
 
             return specs, "string"
 
@@ -190,13 +192,13 @@ class TypesResolver:
         type = value.get("type") if isinstance(value, dict) else None
 
         if type == "Number":
-            return data, "Number"
+            return data, "number"
 
         elif type == "Text":
-            return data, "String"
+            return data, "string"
 
         elif type == "DateTime":
-            return data, "Time"
+            return data, "time"
 
         elif type == "List":
             value = value["value"]
@@ -210,7 +212,7 @@ class TypesResolver:
             return data, None
 
         elif type == "URL":
-            return data, "String"
+            return data, "string"
 
         elif type == "geo:json":
             return data, List.Number
@@ -229,10 +231,10 @@ class TypesResolver:
                 return data, None
 
             if isinstance(value, str):
-                return data, "String"
+                return data, "string"
 
             if isinstance(value, int):
-                return data, "Number"
+                return data, "number"
 
             return data, None
 
@@ -343,4 +345,3 @@ if __name__ == "__main__":
                     data_source_url="https://data.iiss.at/dataskop/fiwarenosec/v2/entities?type=AirQualityObserved",
                 )
             )
-        )
