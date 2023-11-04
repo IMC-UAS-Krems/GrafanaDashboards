@@ -1,0 +1,1211 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 7,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id\n",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value\n",
+              "language": "jsonata",
+              "name": "StationCode"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)\n",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)\n",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)\n",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)\n",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)\n",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)\n",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)\n",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)\n",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)\n",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)\n",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)\n",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)\n",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)\n",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)\n",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].dateObserved.value",
+              "language": "jsonata",
+              "name": ""
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "Time Series",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "YYYY-MM-DDTHH:MM:SS.SSSZ",
+                "destinationType": "time",
+                "targetField": "result16"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": true,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "fixed": 5,
+                  "max": 15,
+                  "min": 2
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "textAlign": "center",
+                  "textBaseline": "middle"
+                }
+              }
+            },
+            "name": "AirQuality",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "fit",
+          "lat": 0,
+          "lon": 0,
+          "padding": 10,
+          "zoom": 15
+        }
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id\n",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value\n",
+              "language": "jsonata",
+              "name": "StationCode"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)\n",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)\n",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)\n",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)\n",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)\n",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)\n",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)\n",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)\n",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)\n",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)\n",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)\n",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)\n",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)\n",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)\n",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].location.value.coordinates[0]",
+              "language": "jsonata",
+              "name": "lon"
+            },
+            {
+              "jsonPath": "$[*].location.value.coordinates[1] ",
+              "language": "jsonata",
+              "name": "lat"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "Map",
+      "transparent": true,
+      "type": "geomap"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto",
+            "filterable": true,
+            "inspect": true
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 8,
+      "options": {
+        "footer": {
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "mean"
+          ],
+          "show": true
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "9.3.6",
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value\n",
+              "language": "jsonata",
+              "name": "StationCode"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)\n",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)\n",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)\n",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)\n",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)\n",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)\n",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)\n",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)\n",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)\n",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)\n",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)\n",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)\n",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)\n",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)\n",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "Table",
+      "transparent": true,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "pointSize": {
+              "fixed": 10
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "series": [],
+        "seriesMapping": "auto",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value\n",
+              "language": "jsonata",
+              "name": "StationCode"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)\n",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)\n",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)\n",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)\n",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)\n",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)\n",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)\n",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)\n",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)\n",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)\n",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)\n",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)\n",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)\n",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)\n",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "XY",
+      "transparent": true,
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id\n",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value\n",
+              "language": "jsonata",
+              "name": "StationCode"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)\n",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)\n",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)\n",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)\n",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)\n",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "Pie Chart",
+      "transparent": true,
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "Station Code",
+        "xTickLabelRotation": 90,
+        "xTickLabelSpacing": 0
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "marcusolsson-json-datasource",
+            "uid": "2RGTUW4Sk"
+          },
+          "fields": [
+            {
+              "jsonPath": "$[*].id",
+              "language": "jsonata",
+              "name": "id"
+            },
+            {
+              "jsonPath": "$[*].stationCode.value",
+              "language": "jsonata",
+              "name": "Station Code"
+            },
+            {
+              "jsonPath": "$[*].($count(NO) > 0 ? NO.value : null)",
+              "language": "jsonata",
+              "name": "NO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NO2) > 0 ? NO2.value : null)",
+              "language": "jsonata",
+              "name": "NO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NOx) > 0 ? NOx.value : null)",
+              "language": "jsonata",
+              "name": "NOx",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(O3) > 0 ? O3.value : null)",
+              "language": "jsonata",
+              "name": "O3",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(BEN) > 0 ? BEN.value : null)",
+              "language": "jsonata",
+              "name": "BEN",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CH4) > 0 ? CH4.value : null)",
+              "language": "jsonata",
+              "name": "CH4",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(EBE) > 0 ? EBE.value : null)",
+              "language": "jsonata",
+              "name": "EBE",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(NHMC) > 0 ? NHMC.value : null)",
+              "language": "jsonata",
+              "name": "NHMC",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(PM10) > 0 ? PM10.value : null)",
+              "language": "jsonata",
+              "name": "PM10",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TCH) > 0 ? TCH.value : null)",
+              "language": "jsonata",
+              "name": "TCH",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(TOL) > 0 ? TOL.value : null)",
+              "language": "jsonata",
+              "name": "TOL",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(CO) > 0 ? CO.value : null)",
+              "language": "jsonata",
+              "name": "CO",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(SO2) > 0 ? SO2.value : null)",
+              "language": "jsonata",
+              "name": "SO2",
+              "type": "number"
+            },
+            {
+              "jsonPath": "$[*].($count(`PM2.5`) > 0 ? `PM2.5`.value : null)",
+              "language": "jsonata",
+              "name": "PM2.5",
+              "type": "number"
+            }
+          ],
+          "method": "GET",
+          "params": [
+            [
+              "type",
+              "AirQualityObserved"
+            ]
+          ],
+          "queryParams": "",
+          "refId": "A",
+          "urlPath": ""
+        }
+      ],
+      "title": "Bar chart",
+      "transformations": [],
+      "transparent": true,
+      "type": "barchart"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2020-05-05T23:00:00.000Z",
+    "to": "2020-05-06T12:00:00.000Z"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Templates new",
+  "uid": "EcygqunIz",
+  "version": 23,
+  "weekStart": ""
+}

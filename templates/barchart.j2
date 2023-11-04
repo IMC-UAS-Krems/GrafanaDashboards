@@ -1,0 +1,103 @@
+{
+    "datasource": {
+      "type": "marcusolsson-json-datasource", 
+      "uid": "2RGTUW4Sk"
+    },
+    "fieldConfig": {
+      "defaults": {
+        "color": {
+          "mode": "palette-classic"
+        },
+        "custom": {
+          "axisCenteredZero": "false"
+          "axisColorMode": "text",
+          "axisLabel": "",
+          "axisPlacement": "auto",
+          "fillOpacity": 80,
+          "gradientMode": "none",
+          "hideFrom": {
+            "legend": false,
+            "tooltip": false,
+            "viz": false
+          },
+          "lineWidth": 1,
+          "scaleDistribution": {
+            "type": "linear"
+          },
+          "thresholdsStyle": {
+            "mode": "off"
+          }
+        },
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green"
+            },
+            {
+              "color": "red",
+              "value": 80
+            }
+          ]
+        }
+      },
+      "overrides": []
+    },
+    "gridPos": {
+      "h": 8,
+      "w": 12,
+      "x": 12,
+      "y": 16
+    },
+    "id": 2,
+    "options": {
+      "barRadius": 0,
+      "barWidth": 0.97,
+      "groupWidth": 0.7,
+      "legend": {
+        "calcs": [],
+        "displayMode": "list",
+        "placement": "bottom",
+        "showLegend": "true"
+      },
+      "orientation": "auto", 
+      "showValue": "auto",
+      "stacking": "none",
+      "tooltip": {
+        "mode": "single",
+        "sort": "none"
+      },
+      "xField": {{xField | jsonify}},
+      "xTickLabelRotation": 0,
+      "xTickLabelSpacing": 0
+    },
+    "targets": [
+      {
+        "cacheDurationSeconds": 300,
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "2RGTUW4Sk"
+        },
+        "fields": {{ fields | jsonify }},
+        "method": "GET",
+        "params": [
+          [
+            "limit",
+            "1000"
+          ],
+          [
+            "type",
+            {{type | jsonify}}
+          ]
+        ],
+        "queryParams": "",
+        "refId": "A",
+        "urlPath": ""
+      }
+    ],
+    "title": {{ title | jsonify }},
+    "transformations": [],
+    "transparent": false,
+    "type": "barchart"
+}

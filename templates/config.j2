@@ -1,0 +1,52 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 7,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {% for plot in config.plots %}
+            {{plot | jsonify}}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ],
+    "refresh": false,
+    "schemaVersion": 37,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "2020-05-05T23:00:00.000Z",
+      "to": "2020-05-06T12:00:00.000Z"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": {{title | jsonify}},
+    "uid": {{uid | jsonify}},
+    "version": 23,
+    "weekStart": ""
+  }
