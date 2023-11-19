@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
@@ -9,37 +9,51 @@
           "mode": "palette-classic"
         },
         "custom": {
+          "axisCenteredZero": false,
+          "axisColorMode": "text",
+          "axisLabel": "",
+          "axisPlacement": "auto",
           "hideFrom": {
             "legend": false,
             "tooltip": false,
             "viz": false
-          }
+          },
+          "lineWidth": 1,
+          "pointSize": {
+            "fixed": 10
+          },
+          "scaleDistribution": {
+            "type": "linear"
+          },
+          "show": "points"
         },
-        "mappings": []
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green"
+            },
+            {
+              "color": "red",
+              "value": 80
+            }
+          ]
+        }
       },
       "overrides": []
     },
-    "gridPos": {
-      "h": 8,
-      "w": 12,
-      "x": 0,
-      "y": 16
-    },
-    "id": 4,
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{id | jsonify }},
     "options": {
       "legend": {
+        "calcs": [],
         "displayMode": "list",
-        "placement": "bottom",
+        "placement": "right",
         "showLegend": true
       },
-      "pieType": "pie",
-      "reduceOptions": {
-        "calcs": [
-          "lastNotNull"
-        ],
-        "fields": "",
-        "values": false
-      },
+      "series": [],
+      "seriesMapping": "auto",
       "tooltip": {
         "mode": "single",
         "sort": "none"
@@ -50,7 +64,7 @@
         "cacheDurationSeconds": 300,
         "datasource": {
           "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
+          "uid": {{ uid | jsonify }}
         },
         "fields": {{ fields | jsonify }},
         "method": "GET",
@@ -71,5 +85,5 @@
     ],
     "title": {{title | jsonify}},
     "transparent": false,
-    "type": "piechart"
+    "type": "xychart"
   }

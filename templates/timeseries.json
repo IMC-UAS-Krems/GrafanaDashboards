@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
@@ -13,19 +13,30 @@
           "axisColorMode": "text",
           "axisLabel": "",
           "axisPlacement": "auto",
+          "barAlignment": 0,
+          "drawStyle": "line",
+          "fillOpacity": 0,
+          "gradientMode": "none",
           "hideFrom": {
             "legend": false,
             "tooltip": false,
             "viz": false
           },
+          "lineInterpolation": "linear",
           "lineWidth": 1,
-          "pointSize": {
-            "fixed": 10
-          },
+          "pointSize": 5,
           "scaleDistribution": {
             "type": "linear"
           },
-          "show": "points"
+          "showPoints": "auto",
+          "spanNulls": false,
+          "stacking": {
+            "group": "A",
+            "mode": "none"
+          },
+          "thresholdsStyle": {
+            "mode": "off"
+          }
         },
         "mappings": [],
         "thresholds": {
@@ -43,22 +54,15 @@
       },
       "overrides": []
     },
-    "gridPos": {
-      "h": 8,
-      "w": 12,
-      "x": 12,
-      "y": 8
-    },
-    "id": 6,
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{id | jsonify }},
     "options": {
       "legend": {
         "calcs": [],
         "displayMode": "list",
-        "placement": "right",
+        "placement": "bottom",
         "showLegend": true
       },
-      "series": [],
-      "seriesMapping": "auto",
       "tooltip": {
         "mode": "single",
         "sort": "none"
@@ -69,7 +73,7 @@
         "cacheDurationSeconds": 300,
         "datasource": {
           "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
+          "uid": {{ uid | jsonify }}
         },
         "fields": {{ fields | jsonify }},
         "method": "GET",
@@ -89,6 +93,6 @@
       }
     ],
     "title": {{title | jsonify}},
-    "transparent": false,
-    "type": "xychart"
+    "transformations": {{transformations | jsonify}},
+    "type": "timeseries"
   }

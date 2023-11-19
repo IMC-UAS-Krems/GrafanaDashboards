@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
@@ -31,13 +31,8 @@
       },
       "overrides": []
     },
-    "gridPos": {
-      "h": 8,
-      "w": 12,
-      "x": 12,
-      "y": 0
-    },
-    "id": 10,
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
     "options": {
       "basemap": {
         "config": {},
@@ -76,6 +71,7 @@
                 "fixed": "img/icons/marker/circle.svg",
                 "mode": "fixed"
               },
+
               "textConfig": {
                 "fontSize": 12,
                 "offsetX": 0,
@@ -108,7 +104,7 @@
         "cacheDurationSeconds": 300,
         "datasource": {
           "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
+          "uid": {{ uid | jsonify }}
         },
         "fields": {{ fields | jsonify }},
         "method": "GET",

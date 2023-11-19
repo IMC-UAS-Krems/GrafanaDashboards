@@ -1,0 +1,74 @@
+{
+    "datasource": {
+      "type": "marcusolsson-json-datasource",
+      "uid": {{ uid | jsonify }}
+    },
+    "fieldConfig": {
+      "defaults": {
+        "color": {
+          "mode": "thresholds"
+        },
+        "custom": {
+          "align": "auto",
+          "displayMode": "auto",
+          "filterable": true,
+          "inspect": true
+        },
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green"
+            },
+            {
+              "color": "red",
+              "value": 80
+            }
+          ]
+        }
+      },
+      "overrides": []
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{id | jsonify }},
+    "options": {
+      "footer": {
+        "enablePagination": false,
+        "fields": "",
+        "reducer": [
+          "mean"
+        ],
+        "show": true
+      },
+      "showHeader": true
+    },
+    "pluginVersion": "9.3.6",
+    "targets": [
+      {
+        "cacheDurationSeconds": 300,
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": {{ uid | jsonify }}
+        },
+        "fields": {{ fields | jsonify }},
+        "method": "GET",
+        "params": [
+          [
+            "limit",
+            "1000"
+          ],
+          [
+            "type",
+            {{type | jsonify}}
+          ]
+        ],
+        "queryParams": "",
+        "refId": "A",
+        "urlPath": ""
+      }
+    ],
+    "title": {{title | jsonify}},
+    "transparent": false,
+    "type": "table"
+  }

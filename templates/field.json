@@ -1,0 +1,6 @@
+{
+    "jsonPath": {{ path | jsonify }},
+    "language": "jsonata",
+    "name": {{ name | jsonify}},
+    "type": {{ type | jsonify }}
+  }

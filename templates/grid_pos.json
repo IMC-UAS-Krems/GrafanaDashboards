@@ -1,0 +1,6 @@
+{
+    "h": {{ h | jsonify }},  
+    "w": {{ w | jsonify }},  
+    "x": {{ x | jsonify }},  
+    "y": {{ y | jsonify }}   
+  }

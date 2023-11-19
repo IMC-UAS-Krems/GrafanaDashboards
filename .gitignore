@@ -161,3 +161,6 @@ cython_debug/
 
 pyrightconfig.json
 .python-version
+
+grafana_dashboards/my_models.py
+templates/input.json

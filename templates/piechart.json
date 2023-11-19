@@ -1,60 +1,51 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
         "color": {
-          "mode": "thresholds"
+          "mode": "palette-classic"
         },
         "custom": {
-          "align": "auto",
-          "displayMode": "auto",
-          "filterable": true,
-          "inspect": true
+          "hideFrom": {
+            "legend": false,
+            "tooltip": false,
+            "viz": false
+          }
         },
-        "mappings": [],
-        "thresholds": {
-          "mode": "absolute",
-          "steps": [
-            {
-              "color": "green"
-            },
-            {
-              "color": "red",
-              "value": 80
-            }
-          ]
-        }
+        "mappings": []
       },
       "overrides": []
     },
-    "gridPos": {
-      "h": 8,
-      "w": 12,
-      "x": 0,
-      "y": 8
-    },
-    "id": 8,
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{id | jsonify }},
     "options": {
-      "footer": {
-        "enablePagination": false,
-        "fields": "",
-        "reducer": [
-          "mean"
-        ],
-        "show": true
+      "legend": {
+        "displayMode": "list",
+        "placement": "bottom",
+        "showLegend": true
       },
-      "showHeader": true
+      "pieType": {{ pie_chart_type | jsonify }},
+      "reduceOptions": {
+        "calcs": [
+          "lastNotNull"
+        ],
+        "fields": "",
+        "values": false
+      },
+      "tooltip": {
+        "mode": "single",
+        "sort": "none"
+      }
     },
-    "pluginVersion": "9.3.6",
     "targets": [
       {
         "cacheDurationSeconds": 300,
         "datasource": {
           "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
+          "uid": {{ uid | jsonify }}
         },
         "fields": {{ fields | jsonify }},
         "method": "GET",
@@ -75,5 +66,5 @@
     ],
     "title": {{title | jsonify}},
     "transparent": false,
-    "type": "table"
+    "type": "piechart"
   }

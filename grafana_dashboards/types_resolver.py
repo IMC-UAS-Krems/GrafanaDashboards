@@ -165,14 +165,15 @@ class TypesResolver:
 
             return specs, None
 
+        # as in grafana json these are starting with a small letter i changed it
         if specs["type"] == "string":
             if specs.get("format") == "date-time":
-                return specs, "Time"
+                return specs, "time" 
 
-            return specs, "String"
+            return specs, "string"
 
         if specs["type"] == "number":
-            return specs, "Number"
+            return specs, "number"
 
         return specs, None
 

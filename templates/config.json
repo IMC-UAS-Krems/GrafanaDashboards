@@ -24,11 +24,11 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 7,
+    "id": {{ id | jsonify }},
     "links": [],
     "liveNow": false,
     "panels": [
-        {% for plot in config.plots %}
+        {% for plot in panels %}
             {{plot | jsonify}}{% if not loop.last %},{% endif %}
         {% endfor %}
     ],
@@ -46,7 +46,7 @@
     "timepicker": {},
     "timezone": "",
     "title": {{title | jsonify}},
-    "uid": {{uid | jsonify}},
+    "uid": {{ uid | jsonify }},
     "version": 23,
     "weekStart": ""
   }
