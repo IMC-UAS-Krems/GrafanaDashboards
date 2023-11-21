@@ -93,6 +93,5 @@
       }
     ],
     "title": {{title | jsonify}},
-    "transformations": {{transformations | jsonify}},
     "type": "timeseries"
   }

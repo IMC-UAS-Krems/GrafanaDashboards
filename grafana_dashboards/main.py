@@ -11,7 +11,7 @@ import uvicorn
 from fastapi import FastAPI
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from panel_gen import generate_uid, generate_bar_chart, generate_pie_chart
+from panel_gen import generate_uid, generate_bar_chart, generate_pie_chart, generate_xy_chart, generate_time_series, generate_geomap
 
 GrafanaModel: TypeAlias = dict
 
@@ -66,16 +66,50 @@ async def generate_file(config: Config) -> GrafanaModel:
                     )
                 )
 
+            elif config_panels[name].type == "xy_chart":
+                panels.append(
+                    generate_xy_chart(
+                        uid= uid,
+                        id=i,
+                        config=config_panels[name],
+                        type_resolver=tr,
+                        data_source=config.data_sources[config_panels[name].source],
+                        title=name,
+                    )
+                )
+            elif config_panels[name].type == "timeseries":
+                panels.append(
+                    generate_time_series(
+                        uid= uid,
+                        id=i,
+                        config=config_panels[name],
+                        type_resolver=tr,
+                        data_source=config.data_sources[config_panels[name].source],
+                        title=name,
+                    )
+                )
+
+            elif config_panels[name].type == "geomap":
+                panels.append(
+                    generate_geomap(
+                        uid= uid,
+                        id=i,
+                        config=config_panels[name],
+                        type_resolver=tr,
+                        data_source=config.data_sources[config_panels[name].source],
+                        title=name,
+                    )
+                )
+
 
     title = config.service.title
-    template = template.render(
+    return json.loads(
+        template.render(
             id=1,
             panels = panels,
             title=title,
             uid = uid,
-        )
-    return json.loads(
-        template
+    )
     )
 
 

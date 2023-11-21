@@ -2,7 +2,7 @@ import base64
 import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from model import BarChart, Datasource, PieChart
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
 from types_resolver import TypesResolver
 
 
@@ -11,6 +11,7 @@ env = Environment(
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
+
 
 def generate_uid() -> str:
     """This function should generate a uid for the panel data source.
@@ -21,6 +22,23 @@ def generate_uid() -> str:
     """
     return "2RGTUW4Sk"
     # return base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
+
+def generate_coordiante_field( i:int) -> dict:
+
+    template = env.get_template("field.json")
+    if i == 0:
+        name="lon"
+    else:
+        name="lat"
+
+    field = template.render(
+        path = f'$[*].location.value.coordinates[{i}]',  # a bit stupid needs to be resolved in the futur, works for now
+        name=name,
+        type="number",
+    )
+    return json.loads(
+        field
+    )
 
 
 def generate_field(field_name: str, types_resolver: TypesResolver, data_source: Datasource) -> dict:
@@ -37,9 +55,9 @@ def generate_field(field_name: str, types_resolver: TypesResolver, data_source: 
     """
     template = env.get_template("field.json")
     type = types_resolver.resolve(data_source.query.type, field_name, data_source.uri)
-
     if not type:
         type = "auto"
+    
     field = template.render(
             path = f'$[*].($count({field_name}) > 0 ? {field_name}.value : null)',  # a bit stupid needs to be resolved in the futur, works for now
             name=field_name,
@@ -49,12 +67,14 @@ def generate_field(field_name: str, types_resolver: TypesResolver, data_source: 
         field
     )
 
+
 def generate_grid_pos(col: int) -> dict:
     """This function generated the grid position for a panel
     h -> height of the panel
     w -> width of the panel
     x -> x position, = col * w
     y -> y position, = col * h
+    Needs to be worked on 
 
     Args:
         col (int): Used the id of the panel 
@@ -63,15 +83,15 @@ def generate_grid_pos(col: int) -> dict:
         dict: grid position of the pane as it is in grid_pos.json
     """
     template = env.get_template("grid_pos.json")
-    pos = template.render(
+    return json.loads(
+        template.render(
                 h=8,
                 w=12,
                 x=col * 12,
                 y = col * 8,
             )
-    return json.loads(
-        pos
     )
+
 
 def generate_bar_chart(
         uid: str,
@@ -109,6 +129,7 @@ def generate_bar_chart(
             title=title,
         )
     )
+
 
 def generate_pie_chart(
         uid: str,
@@ -149,3 +170,80 @@ def generate_pie_chart(
             title=title, 
         )
     )
+
+
+def generate_xy_chart(
+        uid: str,
+        id: int,
+        config: XYChart,
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str
+) -> dict:
+    template = env.get_template("xy.json")
+    return json.loads(
+        template.render(
+            uid=uid,
+            grid_pos= generate_grid_pos(id),
+            id = id,
+            fields=[
+                generate_field(field_name, type_resolver, data_source)
+                for field_name in config.traces
+            ],
+            type=data_source.query.type,
+            title=title,
+        )
+    )
+
+
+def generate_time_series(
+        uid: str,
+        id: int,
+        config: TimeSeries,
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str
+) -> dict:
+    template = env.get_template("timeseries.json")
+    return json.loads(
+        template.render(
+            uid=uid,
+            grid_pos= generate_grid_pos(id),
+            id = id,
+            fields=[
+                generate_field(field_name, type_resolver, data_source)
+                for field_name in config.traces
+            ],
+            type=data_source.query.type,
+            title=title,
+        )
+    )
+
+
+def generate_geomap(
+        uid: str,
+        id: int,
+        config: GeoMap,
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str
+) -> dict:
+    template = env.get_template("geomap.json")
+    fields = [
+                generate_field(field_name, type_resolver, data_source)
+                for field_name in config.data if field_name != 'location'
+            ]
+    fields.append(generate_coordiante_field(0))
+    fields.append(generate_coordiante_field(1))
+    return json.loads(
+        template.render(
+            uid=uid,
+            grid_pos=generate_grid_pos(id),
+            id = id,
+            layerName = data_source.query.type,
+            fields=fields,
+            type=data_source.query.type,
+            title=title,
+        )
+    )
+
