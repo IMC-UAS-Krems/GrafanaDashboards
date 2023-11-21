@@ -1,5 +1,7 @@
 import base64
+from enum import Enum
 import json
+
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
@@ -12,6 +14,10 @@ env = Environment(
 )
 env.filters["jsonify"] = json.dumps
 
+class Coordinates(Enum):
+    LONGITUDE = {'name': 'lon', 'index': 0}
+    LATITUDE = {'name': 'lat', 'index': 1}
+
 
 def generate_uid() -> str:
     """This function should generate a uid for the panel data source.
@@ -23,21 +29,27 @@ def generate_uid() -> str:
     return "2RGTUW4Sk"
     # return base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
 
-def generate_coordiante_field( i:int) -> dict:
 
+def generate_coordiante_field(coordinates:Coordinates) -> dict:
+    """This function generates the field for the coordinate of the geomap panel.
+
+    Args:
+        i (int): Because the coordinates are stored in a list of [longitude, latitude],
+        we need to specify which one we want to query. 0 for longitude, 1 for latitude
+        Needs to be made more general, works for location for now
+        Don't need type_resolver as the type is always number for coordinates
+
+    Returns:
+        dict: field as it is in field.json
+    """
     template = env.get_template("field.json")
-    if i == 0:
-        name="lon"
-    else:
-        name="lat"
 
-    field = template.render(
-        path = f'$[*].location.value.coordinates[{i}]',  # a bit stupid needs to be resolved in the futur, works for now
-        name=name,
-        type="number",
-    )
     return json.loads(
-        field
+        template.render(
+            path = f'$[*].location.value.coordinates[{coordinates.value["index"]}]', 
+            name=coordinates.value["name"],
+            type="number",
+        )
     )
 
 
@@ -58,13 +70,12 @@ def generate_field(field_name: str, types_resolver: TypesResolver, data_source: 
     if not type:
         type = "auto"
     
-    field = template.render(
+    return json.loads(
+        template.render(
             path = f'$[*].($count({field_name}) > 0 ? {field_name}.value : null)',  # a bit stupid needs to be resolved in the futur, works for now
             name=field_name,
             type=type,
         )
-    return json.loads(
-        field
     )
 
 
@@ -74,7 +85,8 @@ def generate_grid_pos(col: int) -> dict:
     w -> width of the panel
     x -> x position, = col * w
     y -> y position, = col * h
-    Needs to be worked on 
+    For the moment we will store the panels 2 by line
+    Grafana dashboards are 24 spaces on x axis.
 
     Args:
         col (int): Used the id of the panel 
@@ -83,12 +95,13 @@ def generate_grid_pos(col: int) -> dict:
         dict: grid position of the pane as it is in grid_pos.json
     """
     template = env.get_template("grid_pos.json")
+
     return json.loads(
         template.render(
                 h=8,
                 w=12,
-                x=col * 12,
-                y = col * 8,
+                x= (col % 2) * 12,
+                y = (col // 2) * 8,
             )
     )
 
@@ -180,6 +193,19 @@ def generate_xy_chart(
         data_source: Datasource,
         title: str
 ) -> dict:
+    """This function generates the xy chart panel.
+
+    Args:
+        uid (str): Unique id of the data source
+        id (int): Id of the panel
+        config (XYChart): The type of the panel
+        type_resolver (TypesResolver): Used to generate the field
+        data_source (Datasource): Used to generate the field
+        title (str): The title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in xy.json
+    """
     template = env.get_template("xy.json")
     return json.loads(
         template.render(
@@ -204,6 +230,19 @@ def generate_time_series(
         data_source: Datasource,
         title: str
 ) -> dict:
+    """This function generates the time series panel.
+
+    Args:
+        uid (str): Unique id of the data source
+        id (int): Id of the panel
+        config (TimeSeries): The type of the panel
+        type_resolver (TypesResolver): Used to generate the field. ! does not work for time
+        data_source (Datasource): Used to generate the field
+        title (str): The title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in timeseries.json
+    """
     template = env.get_template("timeseries.json")
     return json.loads(
         template.render(
@@ -228,13 +267,27 @@ def generate_geomap(
         data_source: Datasource,
         title: str
 ) -> dict:
+    """This function generates the geomap panel.
+
+    Args:
+        uid (str): Unique id of the data source
+        id (int): Id of the panel
+        config (GeoMap): The type of the panel
+        type_resolver (TypesResolver): Used to generate the field
+        data_source (Datasource): Used to generate the field
+        title (str): The title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in geomap.json
+    """
     template = env.get_template("geomap.json")
     fields = [
                 generate_field(field_name, type_resolver, data_source)
                 for field_name in config.data if field_name != 'location'
             ]
-    fields.append(generate_coordiante_field(0))
-    fields.append(generate_coordiante_field(1))
+    # call generate coordinate field separately 
+    fields.append(generate_coordiante_field(Coordinates.LONGITUDE))
+    fields.append(generate_coordiante_field(Coordinates.LATITUDE))
     return json.loads(
         template.render(
             uid=uid,

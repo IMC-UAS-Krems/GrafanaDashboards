@@ -1,34 +1,30 @@
 # GrafanaDashboards
 
-## air_quality_templates.json
+## grafana_dashboards
 
-Added a json template for JSON API data source about air quality.
+### main.py
 
-### Panels
+Holds the API logic and generates the dashboard JSON file.
 
-Created panels using the following visualizations:
+### panel_gen.py
 
-- Bar Chart Stacked
-- Bar Chart
-  - Considering the amount of data it is not that visible.
-- NO Histogram
-  - Serves as a template for creating a histogram based on one component of our data.
-- Gauge
-- Geomap
-  - Not that useful for visualizing the data but it is a nice feature to have and we already had the geolocation data.
-- Bar gauge
-- Table
+Holds the logic for generating the panels.
 
-### PM2.5
+Panels:
 
-Cannot seem to manage to get the PM2.5 data to show up in the table. Tried different ways of formatting the query but no luck.
+- Barchart - generate_bar_chart()
+- Piechart - generate_pie_chart()
+- XYChart - generate_xy_chart()
+- TimeSeries - generate_time_series() - has some issues with the time field in types_resolver.py
+- Geomap - generate_geomap()
+  - has a functipn generate_coordinate_field() because the coordinates are stored in a list in the data
 
-- $[*].($count('PM2.5') > 0 ? 'PM2.5'.value : null) gets the values but not the nulls so they are returned in the order that they appear, with no link to its id.
+Other functions:
 
-- $[*].($count('PM2\.5' > 0 ? 'PM2\.5'.value : null) tried various ways of escaping the ".". Get "Unsupported escape sequence: \"."" error.
+- generate_uid() - needs to be worked on more
 
-- $[*].{"PM2.5" : $count("PM2.5") != 0 ? "PM2.5".value : null} for each id gives [object Object] in the table. This could be caused by trying to find the data with the quotes around the label.
+### types_resolver.py
 
-- Calling the label without the quotes gives the "The literal value 5 cannot be used as a step within a path expression" error.
+Found some issues with the time field in the TimeSeries panel, returns it as "String" instead of "Time" and the time field is not recognized as a time field in the dashboard.
 
-- Escaping the character here doesn't work either.
+Also types are returned with a capital letter, but the dashboard JSON file needs them with a lowercase letter. Returning them with Capital letter is like you don't return anything.
