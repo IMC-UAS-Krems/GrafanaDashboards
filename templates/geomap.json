@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": {{ uid | jsonify }}
+      "uid": "2RGTUW4Sk"
     },
     "fieldConfig": {
       "defaults": {
@@ -104,7 +104,7 @@
         "cacheDurationSeconds": 300,
         "datasource": {
           "type": "marcusolsson-json-datasource",
-          "uid": {{ uid | jsonify }}
+          "uid": "2RGTUW4Sk"
         },
         "fields": {{ fields | jsonify }},
         "method": "GET",
@@ -125,5 +125,7 @@
     ],
     "title": {{title | jsonify}},
     "transparent": false,
-    "type": "geomap"
+    "type": "geomap",
+    "transformations": {{transformations | jsonify}}
+
   }
