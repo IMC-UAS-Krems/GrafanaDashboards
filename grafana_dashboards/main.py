@@ -51,7 +51,9 @@ def generate_uid() -> str:
     return base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
 
 
-@app.get("/")
+@app.get(
+    "/", response_model=GrafanaModel
+)  # NOTE: `response_model` because of https://fastapi.tiangolo.com/tutorial/response-model/#disable-response-model
 async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """This function generates the grafana dashboard json file.
 
