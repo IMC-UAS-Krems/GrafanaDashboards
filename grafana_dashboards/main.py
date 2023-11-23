@@ -6,6 +6,7 @@ import secrets
 
 from model import Config
 from types_resolver import TypesResolver
+import logging_setup  # will be executed on import  # noqa: F401
 
 import uvicorn
 from fastapi import FastAPI
