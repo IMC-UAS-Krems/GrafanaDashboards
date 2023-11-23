@@ -1,8 +1,9 @@
 import logging
 from typing import TypeAlias
 import json
+import base64
+import secrets
 
-import logging_setup  # will be executed on import
 from model import Config
 from types_resolver import TypesResolver
 
@@ -10,13 +11,19 @@ import uvicorn
 from fastapi import FastAPI
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from panel_gen import generate_uid, generate_bar_chart, generate_pie_chart, generate_xy_chart, generate_time_series, generate_geomap
+from panel_gen import (
+    generate_bar_chart,
+    generate_xy_chart,
+    generate_time_series,
+    generate_geomap,
+    generate_pie_chart,
+)
 
 GrafanaModel: TypeAlias = dict
 
 app = FastAPI()
 logger = logging.getLogger("grafana_dashboards")
-logging.basicConfig(level=logging.INFO) 
+logging.basicConfig(level=logging.INFO)
 env = Environment(
     loader=FileSystemLoader("templates"),
     autoescape=select_autoescape("json"),
@@ -24,12 +31,22 @@ env = Environment(
 env.filters["jsonify"] = json.dumps
 
 
-panel_mapping:dict[str, callable] = {
+panel_mapping: dict[str, callable] = {
     "bar_chart": generate_bar_chart,
     "xy_chart": generate_xy_chart,
     "timeseries": generate_time_series,
-    "geomap": generate_geomap
+    "geomap": generate_geomap,
+    "pie_chart": generate_pie_chart,
 }
+
+
+def generate_uid() -> str:
+    """This function should generate a uid for the dashboard.
+
+    Returns:
+        str: uid of the dashboard
+    """
+    return base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
 
 
 @app.get("/")
@@ -49,41 +66,24 @@ async def generate_file(config: Config) -> GrafanaModel:
     with TypesResolver() as tr:
         config_panels = config.application.panels
         for i, name in enumerate(config_panels.keys()):
-            if config_panels[name].type == "pie_chart":
-                panels.append(
-                    generate_pie_chart(
-                        uid= uid,
-                        id=i,
-                        config=config_panels[name],
-                        type_resolver=tr,
-                        data_source=config.data_sources[config_panels[name].source],
-                        title=name,
-                        pie_chart_type=config_panels[name].pie_chart_type
-                    )
+            panels.append(
+                panel_mapping[config_panels[name].type](
+                    id=i,
+                    config=config_panels[name],
+                    type_resolver=tr,
+                    data_source=config.data_sources[config_panels[name].source],
+                    title=name,
                 )
-            else:
-                try:
-                    panels.append(
-                        panel_mapping[config_panels[name].type](
-                            uid = uid,
-                            id=i,
-                            config=config_panels[name],
-                            type_resolver=tr,
-                            data_source=config.data_sources[config_panels[name].source],
-                            title=name,
-                        )
-                    )
-                except KeyError:
-                    logger.error(f"Panel type {config_panels[name].type} not supported")
-                    raise KeyError(f"Panel type {config_panels[name].type} not supported")
+            )
 
     title = config.service.title
+
     return json.loads(
         template.render(
             id=1,
-            panels = panels,
+            panels=panels,
             title=title,
-            uid = uid,
+            uid=uid,
         )
     )
 
