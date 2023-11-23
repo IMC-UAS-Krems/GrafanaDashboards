@@ -3,6 +3,7 @@ import sys
 from copy import copy
 from typing import Literal, Optional
 
+
 """
 Configs logging for the Dash app by creating a 'dash_app' logger
 
@@ -93,3 +94,5 @@ stream_handler.setFormatter(
 )
 grafana_logger.addHandler(stream_handler)
 resolver_logger.addHandler(stream_handler)
+grafana_logger.propagate = False
+resolver_logger.propagate = False
