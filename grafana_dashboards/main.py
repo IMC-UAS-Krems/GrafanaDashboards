@@ -1,5 +1,5 @@
 import logging
-from typing import TypeAlias
+from typing import TypeAlias, Callable
 import json
 import base64
 import secrets
@@ -31,7 +31,7 @@ env = Environment(
 env.filters["jsonify"] = json.dumps
 
 
-panel_mapping: dict[str, callable] = {
+panel_mapping: dict[str, Callable] = {
     "bar_chart": generate_bar_chart,
     "xy_chart": generate_xy_chart,
     "timeseries": generate_time_series,
