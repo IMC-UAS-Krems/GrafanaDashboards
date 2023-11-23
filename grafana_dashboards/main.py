@@ -9,7 +9,8 @@ from types_resolver import TypesResolver
 import logging_setup  # will be executed on import  # noqa: F401
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from panel_gen import (
@@ -51,7 +52,7 @@ def generate_uid() -> str:
 
 
 @app.get("/")
-async def generate_file(config: Config) -> GrafanaModel:
+async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """This function generates the grafana dashboard json file.
 
     Args:
@@ -64,18 +65,25 @@ async def generate_file(config: Config) -> GrafanaModel:
     panels = []
     uid = generate_uid()
 
-    with TypesResolver() as tr:
-        config_panels = config.application.panels
-        for i, name in enumerate(config_panels.keys()):
-            panels.append(
-                panel_mapping[config_panels[name].type](
-                    id=i,
-                    config=config_panels[name],
-                    type_resolver=tr,
-                    data_source=config.data_sources[config_panels[name].source],
-                    title=name,
+    try:
+        with TypesResolver() as tr:
+            config_panels = config.application.panels
+            for i, name in enumerate(config_panels.keys()):
+                panels.append(
+                    panel_mapping[config_panels[name].type](
+                        id=i,
+                        config=config_panels[name],
+                        type_resolver=tr,
+                        data_source=config.data_sources[config_panels[name].source],
+                        title=name,
+                    )
                 )
-            )
+    except KeyError as e:
+        logger.exception(f"KeyError: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": "Internal Server Error"},
+        )
 
     title = config.service.title
 
