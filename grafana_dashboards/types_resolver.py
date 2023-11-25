@@ -153,6 +153,9 @@ class TypesResolver:
         if not specs:
             return specs, None
 
+        if specs.get("anyOf"):
+            specs = specs["anyOf"][0]
+
         if specs["type"] == "object":
             to_return = Keys(specs["properties"].keys())
             specs = specs["properties"]
@@ -345,3 +348,4 @@ if __name__ == "__main__":
                     data_source_url="https://data.iiss.at/dataskop/fiwarenosec/v2/entities?type=AirQualityObserved",
                 )
             )
+        )
