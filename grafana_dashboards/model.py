@@ -1,6 +1,6 @@
-from typing import TypeAlias
+from typing import Annotated, Literal, TypeAlias
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Version(BaseModel):
@@ -27,33 +27,33 @@ class Datasource(BaseModel):
 
 
 class GeoMap(BaseModel):
-    type: str
+    type: Literal["geomap"]
     source: str
     data: list[str]
-    area: str | None  # center coordinates (https://nominatim.org/)
+    area: str | None = Field(None)  # center coordinates (https://nominatim.org/)
 
 
 class PieChart(BaseModel):
-    type: str
+    type: Literal["pie_chart"]
     source: str
     traces: list[str]
-    pie_chart_type: str | None
+    pie_chart_type: str | None = Field(None)
 
 
 class BarChart(BaseModel):
-    type: str
+    type: Literal["bar_chart"]
     source: str
     traces: list[str]  # first trace is x axis
 
 
 class TimeSeries(BaseModel):
-    type: str
+    type: Literal["timeseries"]
     source: str
     traces: list[str]  # first trace is x axis
 
 
 class XYChart(BaseModel):
-    type: str
+    type: Literal["xy_chart"]
     source: str
     traces: list[str]  # first trace is x axis
 
@@ -65,7 +65,7 @@ class Application(BaseModel):
     type: str
     layout: str
     roles: list[str]
-    panels: dict[str, Panel]
+    panels: dict[str, Annotated[Panel, Field(discriminator="type")]]
 
 
 class Deployment(BaseModel):
