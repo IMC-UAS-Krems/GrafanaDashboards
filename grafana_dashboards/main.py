@@ -42,15 +42,6 @@ panel_mapping: dict[str, Callable] = {
 }
 
 
-def generate_uid() -> str:
-    """This function should generate a uid for the dashboard.
-
-    Returns:
-        str: uid of the dashboard
-    """
-    return base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
-
-
 @app.get(
     "/", response_model=GrafanaModel
 )  # NOTE: `response_model` because of https://fastapi.tiangolo.com/tutorial/response-model/#disable-response-model
@@ -65,7 +56,6 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
-    uid = generate_uid()
 
     try:
         with TypesResolver() as tr:
@@ -94,7 +84,8 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
             id=1,
             panels=panels,
             title=title,
-            uid=uid,
+            uid=None, # generate_uid() is not needed, none works fine but is not taking it from fix_datasource.sh 
+            # idk if is supposed to take it from there or not
         )
     )
 
