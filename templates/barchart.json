@@ -64,7 +64,7 @@
         "sort": "none"
       },
       "xField": {{xField | jsonify }},
-      "xTickLabelRotation": 0,
+      "xTickLabelRotation": 90,
       "xTickLabelSpacing": 0
     },
     "targets": [

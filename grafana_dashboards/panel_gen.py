@@ -3,7 +3,7 @@ import json
 
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from grafana_dashboards.trasformations import concat_fields, group_by, organize
+from trasformations import concat_fields, group_by, organize
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
 from types_resolver import Keys, TypesResolver
 
