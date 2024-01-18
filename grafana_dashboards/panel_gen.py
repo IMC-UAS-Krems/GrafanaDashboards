@@ -67,7 +67,7 @@ def generate_field_for_object(
 
     for key in sub_fields:
         inner_type = types_resolver.resolve(
-            data_source.query.type, f"{field_name}.{key}", data_source.uri
+            data_source.query, f"{field_name}.{key}", data_source.uri
         )
         path = f"$[*].($count(`{field_name}`.value.`{key}`) > 0 ? `{field_name}`.value.`{key}` : null)"
         to_return.append(
@@ -110,7 +110,7 @@ def generate_field(
         path = f"$[*].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)"
 
     template = env.get_template("field.json")
-    type = types_resolver.resolve(data_source.query.type, field_name, data_source.uri)
+    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
 
     if not type:
         type = "auto"
@@ -220,7 +220,7 @@ def generate_bar_chart(
             xField=config.traces[0],
             fields=fields,
             transformations=transformations,
-            type=data_source.query.type,
+            type=data_source.query,
             title=title,
         )
     )
@@ -259,7 +259,7 @@ def generate_pie_chart(
             id=id,
             pie_chart_type=config.pie_chart_type,
             fields=fields,
-            type=data_source.query.type,
+            type=data_source.query,
             title=title,
         )
     )
@@ -296,7 +296,7 @@ def generate_xy_chart(
             grid_pos=generate_grid_pos(id),
             id=id,
             fields=fields,
-            type=data_source.query.type,
+            type=data_source.query,
             title=title,
         )
     )
@@ -333,7 +333,7 @@ def generate_time_series(
             grid_pos=generate_grid_pos(id),
             id=id,
             fields=fields,
-            type=data_source.query.type,
+            type=data_source.query,
             title=title,
         )
     )
@@ -408,10 +408,10 @@ def generate_geomap(
         template.render(
             grid_pos=generate_grid_pos(id),
             id=id,
-            layerName=data_source.query.type,
+            layerName=data_source.query,
             transformations=transformations,
             fields=fields,
-            type=data_source.query.type,
+            type=data_source.query,
             title=title,
         )
     )

@@ -23,7 +23,7 @@ class Datasource(BaseModel):
     provider: str  # Fiware
     type: str  # ignore
     uri: str
-    query: Query
+    query: str
 
 
 class GeoMap(BaseModel):
@@ -74,8 +74,12 @@ class Deployment(BaseModel):
     type: str
 
 
+class Data(BaseModel):
+    sources: dict[str, Datasource]
+
+
 class Config(BaseModel):
     service: Service
-    data_sources: dict[str, Datasource]
+    data: Data
     application: Application
     deployment: dict[str, dict[str, Deployment]]
