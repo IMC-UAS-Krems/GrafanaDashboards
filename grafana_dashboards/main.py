@@ -1,13 +1,15 @@
 import logging
 from typing import TypeAlias, Callable
 import json
+from random import choice
 
 from model import Config
 import logging_setup  # will be executed on import  # noqa: F401
 
 import uvicorn
-from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from panel_gen import (
@@ -31,6 +33,14 @@ env = Environment(
 )
 env.filters["jsonify"] = json.dumps
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 panel_mapping: dict[str, Callable] = {
     "bar_chart": generate_bar_chart,
@@ -41,7 +51,7 @@ panel_mapping: dict[str, Callable] = {
 }
 
 
-@app.get(
+@app.post(
     "/", response_model=GrafanaModel
 )  # NOTE: `response_model` because of https://fastapi.tiangolo.com/tutorial/response-model/#disable-response-model
 async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
@@ -100,5 +110,16 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     )
 
 
+@app.get("/")
+def root() -> RedirectResponse:
+    return RedirectResponse("/status")
+
+
+@app.get("/status")
+def status() -> str:
+    statuses = ["Single", "In a relationship", "Married", "In love", "It's complicated"]
+    return choice(statuses)
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=True)
