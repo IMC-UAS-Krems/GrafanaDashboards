@@ -1,16 +1,15 @@
 import logging
 from typing import TypeAlias, Callable
 import json
-import base64
-import secrets
+from random import choice
 
 from model import Config
-from types_resolver import TypesResolver
 import logging_setup  # will be executed on import  # noqa: F401
 
 import uvicorn
-from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from panel_gen import (
@@ -20,17 +19,27 @@ from panel_gen import (
     generate_geomap,
     generate_pie_chart,
 )
+from types_resolver import TypesResolver
 
 GrafanaModel: TypeAlias = dict
 
 app = FastAPI()
 logger = logging.getLogger("grafana_dashboards")
+type_resolver = TypesResolver()
 logging.basicConfig(level=logging.INFO)
 env = Environment(
     loader=FileSystemLoader("templates"),
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 panel_mapping: dict[str, Callable] = {
@@ -42,7 +51,7 @@ panel_mapping: dict[str, Callable] = {
 }
 
 
-@app.get(
+@app.post(
     "/", response_model=GrafanaModel
 )  # NOTE: `response_model` because of https://fastapi.tiangolo.com/tutorial/response-model/#disable-response-model
 async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
@@ -58,18 +67,21 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     panels = []
 
     try:
-        with TypesResolver() as tr:
-            config_panels = config.application.panels
-            for i, name in enumerate(config_panels.keys()):
-                panels.append(
-                    panel_mapping[config_panels[name].type](
-                        id=i,
-                        config=config_panels[name],
-                        type_resolver=tr,
-                        data_source=config.data_sources[config_panels[name].source],
-                        title=name,
-                    )
+        config_panels = config.application.panels
+        for i, name in enumerate(config_panels.keys()):
+            panels.append(
+                panel_mapping[config_panels[name].type](
+                    id=i,
+                    config=config_panels[name],
+                    type_resolver=type_resolver,
+                    # using context manager `with TypesResolver()..` was a stupid idea at a second
+                    # thought, so now it's just a class (created at top of
+                    # file). Nothing changes for you (it works the same as
+                    # before)
+                    data_source=config.data.sources[config_panels[name].source],
+                    title=name,
                 )
+            )
     except KeyError as e:
         logger.exception(f"KeyError: {e}")
         return JSONResponse(
@@ -84,11 +96,30 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
             id=1,
             panels=panels,
             title=title,
-            uid=None, # generate_uid() is not needed, none works fine but is not taking it from fix_datasource.sh 
+            uid=None,  # generate_uid() is not needed, none works fine but is not taking it from fix_datasource.sh
             # idk if is supposed to take it from there or not
+            #
+            # Answer: this is not related to the datasource, but to the dashboard.
+            # fix_datasource.sh is supposed to be used to set the uid of the
+            # new datasouce because when you are adding one, grafana will
+            # generate a random uid for it, and this will cause some issues
+            # (you will have to set the right uid (the one that grafana
+            # created) manually for every dashboard) setting uid to None will
+            # make grafana generate a random one, so it's fine
         )
     )
 
 
+@app.get("/")
+def root() -> RedirectResponse:
+    return RedirectResponse("/status")
+
+
+@app.get("/status")
+def status() -> str:
+    statuses = ["Single", "In a relationship", "Married", "In love", "It's complicated"]
+    return choice(statuses)
+
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=True)
