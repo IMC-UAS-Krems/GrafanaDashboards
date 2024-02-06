@@ -57,8 +57,14 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
+# this is just to work rn 
+class SCMapPanel(BaseModel):
+    type: Literal["smartcomm-map-panel"]
+    source: str
+    traces: list[str]
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart
+
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SCMapPanel
 
 
 class Application(BaseModel):

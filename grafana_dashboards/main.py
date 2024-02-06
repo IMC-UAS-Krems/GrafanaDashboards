@@ -18,6 +18,7 @@ from panel_gen import (
     generate_time_series,
     generate_geomap,
     generate_pie_chart,
+    generate_smartcomm_map,
 )
 from types_resolver import TypesResolver
 
@@ -48,6 +49,7 @@ panel_mapping: dict[str, Callable] = {
     "timeseries": generate_time_series,
     "geomap": generate_geomap,
     "pie_chart": generate_pie_chart,
+    "smartcomm-map-panel": generate_smartcomm_map,
 }
 
 
@@ -96,16 +98,7 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
             id=1,
             panels=panels,
             title=title,
-            uid=None,  # generate_uid() is not needed, none works fine but is not taking it from fix_datasource.sh
-            # idk if is supposed to take it from there or not
-            #
-            # Answer: this is not related to the datasource, but to the dashboard.
-            # fix_datasource.sh is supposed to be used to set the uid of the
-            # new datasouce because when you are adding one, grafana will
-            # generate a random uid for it, and this will cause some issues
-            # (you will have to set the right uid (the one that grafana
-            # created) manually for every dashboard) setting uid to None will
-            # make grafana generate a random one, so it's fine
+            uid=None, 
         )
     )
 

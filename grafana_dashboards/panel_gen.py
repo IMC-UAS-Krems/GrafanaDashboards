@@ -4,7 +4,7 @@ import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
+from model import BarChart, Datasource, PieChart, SCMapPanel, XYChart, TimeSeries, GeoMap
 from types_resolver import Keys, TypesResolver
 
 
@@ -412,6 +412,54 @@ def generate_geomap(
             transformations=transformations,
             fields=fields,
             type=data_source.query,
+            title=title,
+        )
+    )
+
+def generate_smartcomm_map(
+        id: int,
+        config: SCMapPanel, # needs to be added
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str,
+):
+    template = env.get_template("smartcomm-map-panel.json")
+    fields = []
+    transformations = []
+    extra_data = []
+
+    if "id" not in config.traces:
+        config.traces.append("id")
+
+    for field_name in config.traces:
+        if field_name == "location":
+            continue
+
+        generated_fields, group = generate_field(field_name, type_resolver, data_source)
+
+        if group:
+            transformations.append(concat_fields(group[0], group[1:]))
+            transformations.append(organize(exclude_by_name=group[1:]))
+            extra_data.extend(group[1:])
+
+        fields.extend(generated_fields)
+
+    fields.append(generate_coordiante_field(Coordinates.LONGITUDE))
+    fields.append(generate_coordiante_field(Coordinates.LATITUDE))
+
+    config.traces.append(Coordinates.LONGITUDE.value["name"])
+    config.traces.append(Coordinates.LATITUDE.value["name"])
+
+    # config.data.extend(
+    #     extra_data
+    # )
+     
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id),
+            id=id,
+            fields=fields,
+            # type=data_source.query,
             title=title,
         )
     )

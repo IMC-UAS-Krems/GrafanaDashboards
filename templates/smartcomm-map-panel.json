@@ -1,0 +1,34 @@
+{
+    "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "gbmrzM7Iz"
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
+    "options": {
+        "defaultColor": "#CDCECE",
+        "filterOpacity": 0.2,
+        "highlightColor": "#FF723B",
+        "lowerAltitudeBound": 0,
+        "thresholdColor": "#FF723B",
+        "upperAltitudeBound": 1600
+    },
+    "targets": [
+        {
+            "cacheDurationSeconds": 300,
+            "datasource": {
+                "type": "marcusolsson-json-datasource",
+                "uid": "gbmrzM7Iz"
+            },
+            "fields": {{ fields | jsonify }},
+            "method": "GET",
+            "queryParams": "",
+            "refId": "A",
+            "urlPath": ""
+        }
+    ],
+    "title": {{ title | jsonify }},
+    "type": "smartcomm-map-panel"
+}
+
+

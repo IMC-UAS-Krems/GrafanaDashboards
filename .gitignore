@@ -165,3 +165,5 @@ pyrightconfig.json
 grafana_dashboards/my_models.py
 templates/input.json
 grafana_dashboards/table.py
+
+SAG-17.md
