@@ -418,11 +418,23 @@ def generate_geomap(
 
 def generate_smartcomm_map(
         id: int,
-        config: SCMapPanel, # needs to be added
+        config: SCMapPanel, # needs to be added to the actual model.py
         type_resolver: TypesResolver,
         data_source: Datasource,
         title: str,
-):
+)-> dict:
+    """Created this function based on generate_geomap()
+    Generates the fields for creating the smartcomm-map-panel
+
+    Args:
+        id (int): Id of the panel
+        config (SCMapPanel): The type of the panel
+        data_source (Datasource): Used to generate the field
+        title (str): The title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in smartcomm-map-panel.json
+    """
     template = env.get_template("smartcomm-map-panel.json")
     fields = []
     transformations = []
@@ -449,17 +461,13 @@ def generate_smartcomm_map(
 
     config.traces.append(Coordinates.LONGITUDE.value["name"])
     config.traces.append(Coordinates.LATITUDE.value["name"])
-
-    # config.data.extend(
-    #     extra_data
-    # )
      
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id),
             id=id,
             fields=fields,
-            # type=data_source.query,
+            type=data_source.query,
             title=title,
         )
     )

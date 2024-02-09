@@ -1,7 +1,7 @@
 {
     "datasource": {
         "type": "marcusolsson-json-datasource",
-        "uid": "gbmrzM7Iz"
+        "uid": "2RGTUW4Sk"
     },
     "gridPos": {{ grid_pos | jsonify }},
     "id": {{ id | jsonify }},
@@ -22,7 +22,17 @@
             },
             "fields": {{ fields | jsonify }},
             "method": "GET",
-            "queryParams": "",
+            "method": "GET",
+            "params": [
+            [
+                "limit",
+                "1000"
+            ],
+            [
+                "type",
+                {{type | jsonify}}
+            ]
+            ],
             "refId": "A",
             "urlPath": ""
         }

@@ -57,7 +57,7 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
-# this is just to work rn 
+# this is a provisory model, it should be replaced by the actual model
 class SCMapPanel(BaseModel):
     type: Literal["smartcomm-map-panel"]
     source: str

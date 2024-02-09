@@ -76,10 +76,6 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
                     id=i,
                     config=config_panels[name],
                     type_resolver=type_resolver,
-                    # using context manager `with TypesResolver()..` was a stupid idea at a second
-                    # thought, so now it's just a class (created at top of
-                    # file). Nothing changes for you (it works the same as
-                    # before)
                     data_source=config.data.sources[config_panels[name].source],
                     title=name,
                 )
