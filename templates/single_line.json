@@ -15,10 +15,10 @@
         "showDots": false,
         "threshold": 0,
         "thresholdColor": "#E0f3f355",
-        "unit": "%",
+        "unit": "",
         "unitAxis": true,
-        "xAxisLabel": "Zeit",
-        "yAxisLabel": "Luftfeuchtigkeit"
+        "xAxisLabel": "Time",
+        "yAxisLabel": "Value"
     },
     "targets": [
         {
@@ -45,5 +45,6 @@
         }
     ],
     "title": {{ title | jsonify }},
+    "transformations": {{transformations | jsonify}},
     "type": "smartcomm-simpleline-panel"
 }

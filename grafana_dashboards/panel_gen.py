@@ -15,6 +15,25 @@ env = Environment(
 env.filters["jsonify"] = json.dumps
 
 
+def generate_field_time_for_single_line(field_name: str) -> dict:
+    """Because the time is working only with jsonpath, we need to do it separately, for now
+
+
+    Returns:
+        dict: _description_
+    """
+    template = env.get_template("field.json")
+
+    return json.loads(
+        template.render(
+            path=f'$[*].{field_name}.value',
+            language = "jsonpath",
+            name=field_name,
+            type="time",
+        )
+    )
+
+
 class Coordinates(Enum):
     LONGITUDE = {"name": "lon", "index": 0}
     LATITUDE = {"name": "lat", "index": 1}
@@ -37,6 +56,7 @@ def generate_coordiante_field(coordinates: Coordinates) -> dict:
     return json.loads(
         template.render(
             path=f'$[*].location.value.coordinates[{coordinates.value["index"]}]',
+            language = "jsonata",
             name=coordinates.value["name"],
             type="number",
         )
@@ -74,6 +94,7 @@ def generate_field_for_object(
             json.loads(
                 template.render(
                     path=path,
+                    language = "jsonata",
                     name=key,
                     type=inner_type,
                 )
@@ -123,6 +144,7 @@ def generate_field(
             json.loads(
                 template.render(
                     path=path,
+                    language = "jsonata",
                     name=field_name,
                     type=type,
                 )
@@ -425,13 +447,26 @@ def generate_single_line(
 ) -> dict:
     template = env.get_template("single_line.json")
     fields = []
+    transformations = []
 
     if "id" not in config.traces:
         config.traces.append("id")
 
     for field_name in config.traces:
-        generated_fields, _ = generate_field(field_name, type_resolver, data_source)
-        fields.extend(generated_fields)
+        if field_name == "dateObserved":
+            fields.append(generate_field_time_for_single_line(field_name)) # type_resolver is not needed as the type is time 
+        else:
+            generated_fields, _ = generate_field(field_name, type_resolver, data_source)
+            fields.extend(generated_fields)
+
+    transformations.append(group_by("dateObserved", config.traces))
+    transformations.append(
+        organize(
+            rename_by_name={
+                f"{name} (last)": name for name in config.traces if name != "dateObserved"
+            },
+        )
+    )
 
     return json.loads(
         template.render(
@@ -440,5 +475,6 @@ def generate_single_line(
             fields=fields,
             type=data_source.query,
             title=title,
+            transformations=transformations,
         )
     )
