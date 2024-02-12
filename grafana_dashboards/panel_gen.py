@@ -449,8 +449,8 @@ def generate_single_line(
     fields = []
     transformations = []
 
-    if "id" not in config.traces:
-        config.traces.append("id")
+    # if "id" not in config.traces:
+    #     config.traces.append("id")
 
     for field_name in config.traces:
         if field_name == "dateObserved":
@@ -468,6 +468,10 @@ def generate_single_line(
         )
     )
 
+    for name in config.traces:
+        if name != "dateObserved":
+            y_axis_label = name + " values"
+
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id),
@@ -476,5 +480,6 @@ def generate_single_line(
             type=data_source.query,
             title=title,
             transformations=transformations,
+            y_axis_label = y_axis_label,
         )
     )

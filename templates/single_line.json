@@ -18,7 +18,7 @@
         "unit": "",
         "unitAxis": true,
         "xAxisLabel": "Time",
-        "yAxisLabel": "Value"
+        "yAxisLabel": {{ y_axis_label | jsonify }}
     },
     "targets": [
         {
