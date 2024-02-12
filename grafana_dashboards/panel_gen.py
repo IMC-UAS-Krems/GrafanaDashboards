@@ -4,7 +4,7 @@ import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine
 from types_resolver import Keys, TypesResolver
 
 
@@ -410,6 +410,33 @@ def generate_geomap(
             id=id,
             layerName=data_source.query,
             transformations=transformations,
+            fields=fields,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
+def generate_single_line(
+        id: int,
+        config: SingleLine,
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str,
+) -> dict:
+    template = env.get_template("single_line.json")
+    fields = []
+
+    if "id" not in config.traces:
+        config.traces.append("id")
+
+    for field_name in config.traces:
+        generated_fields, _ = generate_field(field_name, type_resolver, data_source)
+        fields.extend(generated_fields)
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id),
+            id=id,
             fields=fields,
             type=data_source.query,
             title=title,

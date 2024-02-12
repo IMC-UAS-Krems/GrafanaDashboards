@@ -18,6 +18,7 @@ from panel_gen import (
     generate_time_series,
     generate_geomap,
     generate_pie_chart,
+    generate_single_line,
 )
 from types_resolver import TypesResolver
 
@@ -48,6 +49,7 @@ panel_mapping: dict[str, Callable] = {
     "timeseries": generate_time_series,
     "geomap": generate_geomap,
     "pie_chart": generate_pie_chart,
+    "smartcomm-simpleline-panel": generate_single_line,
 }
 
 

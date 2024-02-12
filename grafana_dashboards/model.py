@@ -57,8 +57,13 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
+class SingleLine(BaseModel):
+    type: Literal["smartcomm-simpleline-panel"]
+    source: str
+    traces: list[str] 
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart
+
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine
 
 
 class Application(BaseModel):
