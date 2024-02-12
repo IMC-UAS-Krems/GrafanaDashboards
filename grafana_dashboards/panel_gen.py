@@ -1,11 +1,12 @@
 from enum import Enum
 import json
 
-
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
 from trasformations import concat_fields, group_by, organize
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine
 from types_resolver import Keys, TypesResolver
+from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, Coordinates
 
 
 env = Environment(
@@ -13,145 +14,6 @@ env = Environment(
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
-
-
-def generate_field_time_for_single_line(field_name: str) -> dict:
-    """Because the time is working only with jsonpath, we need to do it separately, for now
-
-
-    Returns:
-        dict: _description_
-    """
-    template = env.get_template("field.json")
-
-    return json.loads(
-        template.render(
-            path=f'$[*].{field_name}.value',
-            language = "jsonpath",
-            name=field_name,
-            type="time",
-        )
-    )
-
-
-class Coordinates(Enum):
-    LONGITUDE = {"name": "lon", "index": 0}
-    LATITUDE = {"name": "lat", "index": 1}
-
-
-def generate_coordiante_field(coordinates: Coordinates) -> dict:
-    """This function generates the field for the coordinate of the geomap panel.
-
-    Args:
-        i (int): Because the coordinates are stored in a list of [longitude, latitude],
-        we need to specify which one we want to query. 0 for longitude, 1 for latitude
-        Needs to be made more general, works for location for now
-        Don't need type_resolver as the type is always number for coordinates
-
-    Returns:
-        dict: field as it is in field.json
-    """
-    template = env.get_template("field.json")
-
-    return json.loads(
-        template.render(
-            path=f'$[*].location.value.coordinates[{coordinates.value["index"]}]',
-            language = "jsonata",
-            name=coordinates.value["name"],
-            type="number",
-        )
-    )
-
-
-def generate_field_for_object(
-    field_name: str,
-    sub_fields: Keys,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
-) -> tuple[list[dict], list | None]:
-    """This function generates a field for a panel in case the field is an object.
-
-    Args:
-        field_name: Name of the field/the element that we want to query
-        sub_fields: Inner fields of the `field_name` field (the object)
-        types_resolver: From the types_resolver.py file. The field type is resolved using this object
-        data_source: From the model.py file. The data source is used to get the type of the query
-
-    Returns:
-        tuple: list of fields as it is in field.json (list can contain only one element), list of fields that needs to be concatenated
-        by the transformation
-    """
-    template = env.get_template("field.json")
-    to_return = []
-    group = [field_name]
-
-    for key in sub_fields:
-        inner_type = types_resolver.resolve(
-            data_source.query, f"{field_name}.{key}", data_source.uri
-        )
-        path = f"$[*].($count(`{field_name}`.value.`{key}`) > 0 ? `{field_name}`.value.`{key}` : null)"
-        to_return.append(
-            json.loads(
-                template.render(
-                    path=path,
-                    language = "jsonata",
-                    name=key,
-                    type=inner_type,
-                )
-            )
-        )
-        group.append(key)
-
-    return to_return, group
-
-
-def generate_field(
-    field_name: str, types_resolver: TypesResolver, data_source: Datasource
-) -> tuple[list[dict], list | None]:
-    """This function generates a field for a panel.
-    It uses the field.json template to generate the field.
-
-    Args:
-        field_name (str): Name of the field/the element that we want to query
-        types_resolver (TypesResolver): From the types_resolver.py file. The field type is resolved using this object
-        data_source (Datasource): From the model.py file. The data source is used to get the type of the query
-
-    Returns:
-        tuple: list of fields as it is in field.json (list can contain only one element), list of fields that needs to be concatenated by the
-        transformation
-    """
-
-    # INFO: a little bit hacky, but works for now. It's needed to group the fields that are in the same object.
-    # In our case `id` can also conatin `timestamp` or `latest`
-    # Example:
-    # Madrid-AirQualityObserved-28079004-2020-05-06T00:00:00 -> Madrid-AirQualityObserved-28079004
-    if field_name == "id":
-        path = r'$[*].id.$replace(/-(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|latest)$/,"")'  # a bit stupid needs to be resolved in the futur, works for now
-    else:
-        path = f"$[*].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)"
-
-    template = env.get_template("field.json")
-    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
-
-    if not type:
-        type = "auto"
-
-    if isinstance(type, Keys):
-        return generate_field_for_object(field_name, type, types_resolver, data_source)
-
-    return (
-        [
-            json.loads(
-                template.render(
-                    path=path,
-                    language = "jsonata",
-                    name=field_name,
-                    type=type,
-                )
-            )
-        ],
-        None,
-    )
 
 
 def generate_grid_pos(col: int) -> dict:
@@ -454,7 +316,7 @@ def generate_single_line(
 
     for field_name in config.traces:
         if field_name == "dateObserved":
-            fields.append(generate_field_time_for_single_line(field_name)) # type_resolver is not needed as the type is time 
+            fields.append(generate_time_field_for_single_line(field_name)) # type_resolver is not needed as the type is time 
         else:
             generated_fields, _ = generate_field(field_name, type_resolver, data_source)
             fields.extend(generated_fields)
