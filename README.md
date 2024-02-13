@@ -8,23 +8,36 @@ Holds the API logic and generates the dashboard JSON file.
 
 ### panel_gen.py
 
-Holds the logic for generating the panels.
+Holds the logic for generating the panels. Each panel has its own function.
 
 Panels:
 
 - Barchart - generate_bar_chart()
 - Piechart - generate_pie_chart()
 - XYChart - generate_xy_chart()
-- TimeSeries - generate_time_series() - has some issues with the time field in types_resolver.py
+- TimeSeries - generate_time_series() 
 - Geomap - generate_geomap()
-  - has a functipn generate_coordinate_field() because the coordinates are stored in a list in the data
+- Single Line Smartcommunities - generate_single_line()
+
 
 Other functions:
 
-- generate_uid() - needs to be worked on more
+- generate_grid_pos() - generates the grid position for the panels in the dashboard
 
-### types_resolver.py
+### field_generators.py
 
-Found some issues with the time field in the TimeSeries panel, returns it as "String" instead of "Time" and the time field is not recognized as a time field in the dashboard.
+Because we have multiple functions that generate fields for the panels, we have a separate file for this logic. 
 
-Also types are returned with a capital letter, but the dashboard JSON file needs them with a lowercase letter. Returning them with Capital letter is like you don't return anything.
+- generate_time_field_for_single_line() - generates the time field for the single line panel 
+- generate_coordinate_field() - generates the coordinate field for the geomap panel
+- _generate_field_for_object() - generates the field for an object in the panel
+- generate_field() - generates a generic field for the panel
+
+### model.py
+
+Holds the model for the dashboard.
+
+**Note**: SingleLine model is implemented for now just to implement the logic for the single line panel. Needs to be changed whith the model from Lucia 
+
+**Note 2**: All models have `traces` for fields to be extracted, only geomap has `data`. Is there a technical reason for this or can we change it to `traces` to be consistent?
+

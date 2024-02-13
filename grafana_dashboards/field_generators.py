@@ -1,3 +1,12 @@
+"""
+This module is responsible for generating the fields for the queries in the Grafana dashboard.
+The fields are used to query the data from the datasource.
+Because some fields are different for different panels, we have multiple functions.
+
+Returns:
+    dict | tuple[list[dict], list | None]: The fields as they are in field.json 
+    or a list of fields and a list of groups
+"""
 from enum import Enum
 import json
 

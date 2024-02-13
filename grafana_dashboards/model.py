@@ -57,6 +57,8 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
+# this was added for the smartcomm-simpleline-panel
+# needs to be changed with the model from Lucia
 class SingleLine(BaseModel):
     type: Literal["smartcomm-simpleline-panel"]
     source: str
