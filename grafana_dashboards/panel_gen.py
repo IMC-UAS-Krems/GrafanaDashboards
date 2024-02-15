@@ -359,13 +359,16 @@ def generate_field_calendar(
     types_resolver: TypesResolver,
     data_source: Datasource,
 )-> dict:
-    """
-    Should generate the fields for the calendar panel
-    Query example:
-    $[*][stationName.value="Villaverde"].($count(`O3`) > 0 ? `O3`.value : null)
-    $[*][stationName.value="Villaverde"].($count(`dateObserved`) > 0 ? `dateObserved`.value : null)
+    """This function generates a field for a calendar panel.
+    It uses the field.json template to generate the field.
+    #TODO: Change language after rebasing
 
-    $[*][stationName.value={location}].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)
+    Args:
+        location (str): The station name
+        field_name (str): The field name that we want to query
+
+    Returns:
+        dict: The fields of the panel as it is in field.json
     """
     template = env.get_template("field.json")
     path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
@@ -387,8 +390,19 @@ def generate_target(
     types_resolver: TypesResolver,
     data_source: Datasource,
 )-> dict:
-    """Should generate the targets for the calendar panel
-    each group of location-element should have a target
+    """This function generates the target for the calendar panel.
+    Each target is a query for a specific location and a specific field.
+    Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
+    Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
+
+    Args:
+        config (Calendar): We use this to get the type of the query
+        location (str): The station name
+        field_name (str): The field name that we want to query
+        index_field (int): The index of the field 
+
+    Returns:
+        dict: The fields of the panel as it is in target.json
     """
     attributes = ["Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
@@ -407,13 +421,11 @@ def generate_target(
     )
 
 def callendar_grid_pos(id: int) -> dict:
-    """This function generated the grid position for a panel
-    h -> height of the panel
-    w -> width of the panel
+    """This function generated the grid position for a calendar panel
+    h -> height of the panel (32 fits)
+    w -> width of the panel (24)
     x -> x position, = col * w
     y -> y position, = col * h
-    For the moment we will store the panels 2 by line
-    Grafana dashboards are 24 spaces on x axis.
 
     Args:
         col (int): Used the id of the panel
@@ -428,7 +440,7 @@ def callendar_grid_pos(id: int) -> dict:
             h=32,
             w=24,
             x=(id % 2) * 24,
-            y = (id // 2) * 8,
+            y = (id // 2) * 8, # assuming that other panels are 8 high
         )
     )
     
@@ -449,44 +461,32 @@ def generate_calendar(
     data_source: Datasource,
     title: str,
 ) -> dict:
-    """
-    I think here we can separate the targets into location and elements 
-    After that combine them into location-element 
+    """This function generates the calendar panel.
+    I assumed that traces is structured like this:
+    locations, dateObserved, elements
+    Locations are a max of 8/10
+    Elements are a max of 4
 
-    let's assume that the calendar panel will have the input:
-    "Calendar": 
-    {
-        "type": "smartcomm-calendar-panel",
-        "source": "AirQualityObserved",
-        "traces": [
-            "Pza. de España",
-            "Escuelas Aguirre", 
-            "Avda. Ramón y Cajal", 
-            "Arturo Soria", 
-            "Villaverde",
-            "dateObserved",
-            "O3",
-            "CO", 
-            "NO", 
-            "NO2"
-        ]
-    }
+    Args:
+        config (Calendar): Needs to be introduced also in the definition
+
+    Returns:
+        dict: The fields of the panel as it is in calendar.json
     """
     template = env.get_template("calendar.json")
     targets = []
-
     locations = []
+
     for location in config.traces:
         if location == "dateObserved":
             break
         locations.append(location)
+
     elements = config.traces[len(locations)+1:]
 
     for location in locations:
         for element in elements:
             targets.append(generate_target(config, location, element, elements.index(element), type_resolver, data_source))
-
-    
 
     return json.loads(
         template.render(
