@@ -3,7 +3,7 @@
         "type": "marcusolsson-json-datasource",
         "uid": "2RGTUW4Sk"
     },
-    "gridPos": {{ gridPos | jsonify }},
+    "gridPos": {{ grid_pos | jsonify }},
     "id": {{ id | jsonify }},
     "options": {
         "colorPicker": [

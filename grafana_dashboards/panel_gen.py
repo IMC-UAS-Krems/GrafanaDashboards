@@ -362,27 +362,52 @@ def generate_field_calendar(
     """
     Should generate the fields for the calendar panel
     Query example:
-    $[*][stationName.value="Escuelas Aguirre"].SO2.value
-    $[*][stationName.value="Escuelas Aguirre"].dateObserved.value
+    $[*][stationName.value="Villaverde"].($count(`O3`) > 0 ? `O3`.value : null)
+    $[*][stationName.value="Villaverde"].($count(`dateObserved`) > 0 ? `dateObserved`.value : null)
 
-    $[*][stationName.value={location}].{field_name}.value
+    $[*][stationName.value={location}].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)
     """
-    pass
+    template = env.get_template("field.json")
+    path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
+
+    return json.loads(
+        template.render(
+            path=path,
+            name=field_name,
+            type=type,
+        )
+    )
 
 def generate_target(
-    location: str,
-    field_name: str,
+    config: Calendar,
+    location: str, # example: "Pza. de España"
+    field_name: str, # example: "O3"
+    index_field: int, # between 0 and 3
     types_resolver: TypesResolver,
     data_source: Datasource,
 )-> dict:
     """Should generate the targets for the calendar panel
     each group of location-element should have a target
     """
+    attributes = ["Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
     fields = []
-    refID = location + "-" + field_name
+    refID = location + "-" + attributes[index_field]
+
+    fields.append(generate_field_calendar(location, field_name, types_resolver, data_source))
+    fields.append(generate_field_calendar(location, "dateObserved", types_resolver, data_source))
+
+    return json.loads(
+        template.render(
+            refID=refID,
+            fields=fields,
+            type=data_source.query,
+        )
+    )
+
     
-    pass
+    
 
 # locations
 # [ "Pza. de España", "Escuelas Aguirre", "Avda. Ramón y Cajal", "Arturo Soria", "Villaverde", 
@@ -403,5 +428,50 @@ def generate_calendar(
     """
     I think here we can separate the targets into location and elements 
     After that combine them into location-element 
+
+    let's assume that the calendar panel will have the input:
+    "Calendar": 
+    {
+        "type": "smartcomm-calendar-panel",
+        "source": "AirQualityObserved",
+        "traces": [
+            "Pza. de España",
+            "Escuelas Aguirre", 
+            "Avda. Ramón y Cajal", 
+            "Arturo Soria", 
+            "Villaverde",
+            "dateObserved",
+            "O3",
+            "CO", 
+            "NO", 
+            "NO2"
+        ]
+    }
     """
-    pass
+    template = env.get_template("calendar.json")
+    targets = []
+
+    locations = []
+    for location in config.traces:
+        if location == "dateObserved":
+            break
+        locations.append(location)
+    elements = config.traces[len(locations)+1:]
+
+    for location in locations:
+        for element in elements:
+            targets.append(generate_target(config, location, element, elements.index(element), type_resolver, data_source))
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id), # grid_pos needs to be adjusted for the calendar panel
+            id=id,
+            targets=targets,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
+    
+
+    
