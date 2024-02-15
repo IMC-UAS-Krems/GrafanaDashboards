@@ -406,7 +406,31 @@ def generate_target(
         )
     )
 
-    
+def callendar_grid_pos(id: int) -> dict:
+    """This function generated the grid position for a panel
+    h -> height of the panel
+    w -> width of the panel
+    x -> x position, = col * w
+    y -> y position, = col * h
+    For the moment we will store the panels 2 by line
+    Grafana dashboards are 24 spaces on x axis.
+
+    Args:
+        col (int): Used the id of the panel
+
+    Returns:
+        dict: grid position of the pane as it is in grid_pos.json
+    """
+    template = env.get_template("grid_pos.json")
+
+    return json.loads(
+        template.render(
+            h=32,
+            w=24,
+            x=(id % 2) * 24,
+            y = (id // 2) * 8,
+        )
+    )
     
 
 # locations
@@ -462,9 +486,11 @@ def generate_calendar(
         for element in elements:
             targets.append(generate_target(config, location, element, elements.index(element), type_resolver, data_source))
 
+    
+
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id), # grid_pos needs to be adjusted for the calendar panel
+            grid_pos=callendar_grid_pos(id),
             id=id,
             targets=targets,
             type=data_source.query,
