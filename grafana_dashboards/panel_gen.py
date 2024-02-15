@@ -1,11 +1,18 @@
-from enum import Enum
+"""
+This module is used to generate the panels for the Grafana dashboard.
+Also contains the function to generate the grid position for the panels.
+
+Returns:
+    dict: The fields of the panels as it is in the templates
+"""
 import json
 
-
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine
 from types_resolver import Keys, TypesResolver
+from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, Coordinates
 
 
 env = Environment(
@@ -13,123 +20,6 @@ env = Environment(
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
-
-
-class Coordinates(Enum):
-    LONGITUDE = {"name": "lon", "index": 0}
-    LATITUDE = {"name": "lat", "index": 1}
-
-
-def generate_coordiante_field(coordinates: Coordinates) -> dict:
-    """This function generates the field for the coordinate of the geomap panel.
-
-    Args:
-        i (int): Because the coordinates are stored in a list of [longitude, latitude],
-        we need to specify which one we want to query. 0 for longitude, 1 for latitude
-        Needs to be made more general, works for location for now
-        Don't need type_resolver as the type is always number for coordinates
-
-    Returns:
-        dict: field as it is in field.json
-    """
-    template = env.get_template("field.json")
-
-    return json.loads(
-        template.render(
-            path=f'$[*].location.value.coordinates[{coordinates.value["index"]}]',
-            name=coordinates.value["name"],
-            type="number",
-        )
-    )
-
-
-def generate_field_for_object(
-    field_name: str,
-    sub_fields: Keys,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
-) -> tuple[list[dict], list | None]:
-    """This function generates a field for a panel in case the field is an object.
-
-    Args:
-        field_name: Name of the field/the element that we want to query
-        sub_fields: Inner fields of the `field_name` field (the object)
-        types_resolver: From the types_resolver.py file. The field type is resolved using this object
-        data_source: From the model.py file. The data source is used to get the type of the query
-
-    Returns:
-        tuple: list of fields as it is in field.json (list can contain only one element), list of fields that needs to be concatenated
-        by the transformation
-    """
-    template = env.get_template("field.json")
-    to_return = []
-    group = [field_name]
-
-    for key in sub_fields:
-        inner_type = types_resolver.resolve(
-            data_source.query, f"{field_name}.{key}", data_source.uri
-        )
-        path = f"$[*].($count(`{field_name}`.value.`{key}`) > 0 ? `{field_name}`.value.`{key}` : null)"
-        to_return.append(
-            json.loads(
-                template.render(
-                    path=path,
-                    name=key,
-                    type=inner_type,
-                )
-            )
-        )
-        group.append(key)
-
-    return to_return, group
-
-
-def generate_field(
-    field_name: str, types_resolver: TypesResolver, data_source: Datasource
-) -> tuple[list[dict], list | None]:
-    """This function generates a field for a panel.
-    It uses the field.json template to generate the field.
-
-    Args:
-        field_name (str): Name of the field/the element that we want to query
-        types_resolver (TypesResolver): From the types_resolver.py file. The field type is resolved using this object
-        data_source (Datasource): From the model.py file. The data source is used to get the type of the query
-
-    Returns:
-        tuple: list of fields as it is in field.json (list can contain only one element), list of fields that needs to be concatenated by the
-        transformation
-    """
-
-    # INFO: a little bit hacky, but works for now. It's needed to group the fields that are in the same object.
-    # In our case `id` can also conatin `timestamp` or `latest`
-    # Example:
-    # Madrid-AirQualityObserved-28079004-2020-05-06T00:00:00 -> Madrid-AirQualityObserved-28079004
-    if field_name == "id":
-        path = r'$[*].id.$replace(/-(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|latest)$/,"")'  # a bit stupid needs to be resolved in the futur, works for now
-    else:
-        path = f"$[*].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)"
-
-    template = env.get_template("field.json")
-    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
-
-    if not type:
-        type = "auto"
-
-    if isinstance(type, Keys):
-        return generate_field_for_object(field_name, type, types_resolver, data_source)
-
-    return (
-        [
-            json.loads(
-                template.render(
-                    path=path,
-                    name=field_name,
-                    type=type,
-                )
-            )
-        ],
-        None,
-    )
 
 
 def generate_grid_pos(col: int) -> dict:
@@ -168,6 +58,9 @@ def generate_bar_chart(
 ) -> dict:
     """This function generates the bar chart panel.
 
+    If the field is an object, we need to group the fields and hide them from the user.
+    That is why we have transformations and extra_data.
+
     Args:
         id (int): The id of the panel
         config (BarChart): The type of the panel
@@ -189,20 +82,14 @@ def generate_bar_chart(
 
     for field_name in config.traces:
         generated_fields, group = generate_field(field_name, type_resolver, data_source)
-
-        # there are some fields that are in the same object, so we need to group them
         if group:
             transformations.append(concat_fields(group[0], group[1:]))
-            # since we want to group inner fields of a key (object) we need to hide them from the user
             transformations.append(organize(exclude_by_name=group[1:]))
-            # but keep them for the Grafana since they are needed for transformation (otherwise the grouping will fail)
             extra_data.extend(group[1:])
 
         fields.extend(generated_fields)
 
-    config.traces.extend(
-        extra_data
-    )  # add the extra data to the config so we can group them
+    config.traces.extend(extra_data)  
 
     transformations.append(group_by("id", config.traces))
     transformations.append(
@@ -348,6 +235,11 @@ def generate_geomap(
 ) -> dict:
     """This function generates the geomap panel.
 
+    If the field is an object, we need to group the fields and hide them from the user.
+    That is why we have transformations and extra_data.
+
+    We also need to generate the fields for the coordinates separately.
+
     Args:
         id (int): Id of the panel
         config (GeoMap): The type of the panel
@@ -369,31 +261,21 @@ def generate_geomap(
     for field_name in config.data:
         if field_name == "location":
             continue
-
         generated_fields, group = generate_field(field_name, type_resolver, data_source)
-
-        # there are some fields that are in the same object, so we need to group them
         if group:
             transformations.append(concat_fields(group[0], group[1:]))
-            # since we want to group inner fields of a key (object) we need to hide them from the user
             transformations.append(organize(exclude_by_name=group[1:]))
-            # but keep them for the Grafana since they are needed for transformation (otherwise the grouping will fail)
             extra_data.extend(group[1:])
-
         fields.extend(generated_fields)
 
-    # call generate coordinate field separately
     fields.append(generate_coordiante_field(Coordinates.LONGITUDE))
     fields.append(generate_coordiante_field(Coordinates.LATITUDE))
 
-    # we need the names of the fields for the group_by
     # NOTE: this can be extracted into separate function (location_group_by) because there can be more than one group_by
     config.data.append(Coordinates.LONGITUDE.value["name"])
     config.data.append(Coordinates.LATITUDE.value["name"])
 
-    config.data.extend(
-        extra_data
-    )  # add the extra data to the config so we can group them
+    config.data.extend(extra_data)  
 
     transformations.append(group_by("id", config.data))
     transformations.append(
@@ -413,5 +295,60 @@ def generate_geomap(
             fields=fields,
             type=data_source.query,
             title=title,
+        )
+    )
+
+
+def generate_single_line(
+        id: int,
+        config: SingleLine,
+        type_resolver: TypesResolver,
+        data_source: Datasource,
+        title: str,
+) -> dict:
+    """This function generates the single line panel for the plugin smartcomm-simpleline-panel.
+    Needed to create a separate function for field generation
+    The time field can be extracted only with jsonpath language.
+    This pannel does not care about location or id fields.
+    If this is something we care about needs to be changed.
+
+    Considered only the case when there is one value asked to be displayed on the y axis.
+
+    Returns:
+        dict: The fields of the panel as it is in single_line.json
+    """
+    template = env.get_template("single_line.json")
+    fields = []
+    transformations = []
+
+    for field_name in config.traces:
+        if field_name == "dateObserved":
+            fields.append(generate_time_field_for_single_line(field_name))
+        else:
+            generated_fields, _ = generate_field(field_name, type_resolver, data_source)
+            fields.extend(generated_fields)
+
+    transformations.append(group_by("dateObserved", config.traces))
+    transformations.append(
+        organize(
+            rename_by_name={
+                f"{name} (last)": name for name in config.traces if name != "dateObserved"
+            },
+        )
+    )
+
+    for name in config.traces:
+        if name != "dateObserved":
+            y_axis_label = name + " values"
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id),
+            id=id,
+            fields=fields,
+            type=data_source.query,
+            title=title,
+            transformations=transformations,
+            y_axis_label = y_axis_label,
         )
     )

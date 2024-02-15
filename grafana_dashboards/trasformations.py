@@ -21,7 +21,7 @@ def group_by(
         "id": "groupBy",
         "options": {
             "fields": {
-                "id": {
+                group_by : {
                     "aggregations": [],
                     "operation": "groupby",
                 }

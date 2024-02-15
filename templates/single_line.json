@@ -1,0 +1,50 @@
+{
+    "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
+    "options": {
+        "cricleColor": "#BF616A",
+        "dotColor": "#222531",
+        "dotSize": 3,
+        "linecolor": "#858AE3",
+        "linethickness": 2,
+        "nrOfDataShown": 100,
+        "showDots": false,
+        "threshold": 0,
+        "thresholdColor": "#E0f3f355",
+        "unit": "",
+        "unitAxis": true,
+        "xAxisLabel": "Time",
+        "yAxisLabel": {{ y_axis_label | jsonify }}
+    },
+    "targets": [
+        {
+            "cacheDurationSeconds": 300,
+            "datasource": {
+                "type": "marcusolsson-json-datasource",
+                "uid": "2RGTUW4Sk"
+            },
+            "fields": {{ fields | jsonify }},
+            "method": "GET",
+            "params": [
+                [
+                  "limit",
+                  "1000"
+                ],
+                [
+                  "type",
+                  {{type | jsonify}}
+                ]
+              ],
+            "queryParams": "",
+            "refId": "A",
+            "urlPath": ""
+        }
+    ],
+    "title": {{ title | jsonify }},
+    "transformations": {{transformations | jsonify}},
+    "type": "smartcomm-simpleline-panel"
+}
