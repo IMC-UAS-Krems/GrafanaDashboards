@@ -57,15 +57,17 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
-# this was added for the smartcomm-simpleline-panel
-# needs to be changed with the model from Lucia
 class SingleLine(BaseModel):
     type: Literal["smartcomm-simpleline-panel"]
     source: str
     traces: list[str] 
 
+class Calendar(BaseModel):
+    type: Literal["smartcomm-calendar-panel"]
+    source: str
+    traces: list[str]  
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar
 
 
 class Application(BaseModel):

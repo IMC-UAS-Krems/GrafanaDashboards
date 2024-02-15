@@ -10,7 +10,7 @@ import json
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar
 from types_resolver import Keys, TypesResolver
 from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, Coordinates
 
@@ -352,3 +352,56 @@ def generate_single_line(
             y_axis_label = y_axis_label,
         )
     )
+
+def generate_field_calendar(
+    location: str,
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+)-> dict:
+    """
+    Should generate the fields for the calendar panel
+    Query example:
+    $[*][stationName.value="Escuelas Aguirre"].SO2.value
+    $[*][stationName.value="Escuelas Aguirre"].dateObserved.value
+
+    $[*][stationName.value={location}].{field_name}.value
+    """
+    pass
+
+def generate_target(
+    location: str,
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+)-> dict:
+    """Should generate the targets for the calendar panel
+    each group of location-element should have a target
+    """
+    template = env.get_template("target.json")
+    fields = []
+    refID = location + "-" + field_name
+    
+    pass
+
+# locations
+# [ "Pza. de España", "Escuelas Aguirre", "Avda. Ramón y Cajal", "Arturo Soria", "Villaverde", 
+# "Farolillo", "Casa de Campo", "Barajas Pueblo", "Pza. del Carmen", "Moratalaz", "Cuatro Caminos", 
+# "Barrio del Pilar", "Vallecas", "Mendez Alvaro", "Castellana", "Parque del Retiro", "Plaza Castilla", 
+# "Ensanche de Vallecas", "Urb. Embajada", "Pza. Fernández Ladreda", "Sanchinarro", "El Pardo", "Juan Carlos I", "Tres Olivos" ]
+
+# elements
+# CO, NO, NO2, NOx, SO2, PM2.5, PM10, O3, TOL, BEN, EBE, TCH, CH4, NMHC
+
+def generate_calendar(
+    id: int,
+    config: Calendar,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    """
+    I think here we can separate the targets into location and elements 
+    After that combine them into location-element 
+    """
+    pass
