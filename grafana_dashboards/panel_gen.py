@@ -11,8 +11,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from trasformations import concat_fields, group_by, organize
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar
-from types_resolver import Keys, TypesResolver
-from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, Coordinates
+from types_resolver import TypesResolver
+from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, generate_field_calendar, Coordinates
 
 
 env = Environment(
@@ -22,14 +22,14 @@ env = Environment(
 env.filters["jsonify"] = json.dumps
 
 
-def generate_grid_pos(col: int) -> dict:
+def generate_grid_pos(col: int, panel_type:str) -> dict:
     """This function generated the grid position for a panel
     h -> height of the panel
     w -> width of the panel
     x -> x position, = col * w
     y -> y position, = col * h
-    For the moment we will store the panels 2 by line
-    Grafana dashboards are 24 spaces on x axis.
+    Depending on the panel type, the height and width are different.
+    For the moment, the only panel that has a different height and width is the calendar panel.
 
     Args:
         col (int): Used the id of the panel
@@ -39,12 +39,21 @@ def generate_grid_pos(col: int) -> dict:
     """
     template = env.get_template("grid_pos.json")
 
+    if panel_type == "smartcomm-calendar-panel":
+        h = 32
+        w = 24
+        x = (col % 2) * 24
+    else:
+        h = 8
+        w = 12
+        x = (col % 2) * 12
+
     return json.loads(
         template.render(
-            h=8,
-            w=12,
-            x=(col % 2) * 12,
-            y=(col // 2) * 8,
+            h=h,
+            w=w,
+            x=x,
+            y=(col // 2) * 8,  # assuming that other panels are 8 high
         )
     )
 
@@ -102,7 +111,7 @@ def generate_bar_chart(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             xField=config.traces[0],
             fields=fields,
@@ -142,7 +151,7 @@ def generate_pie_chart(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             pie_chart_type=config.pie_chart_type,
             fields=fields,
@@ -180,7 +189,7 @@ def generate_xy_chart(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             fields=fields,
             type=data_source.query,
@@ -217,7 +226,7 @@ def generate_time_series(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             fields=fields,
             type=data_source.query,
@@ -288,7 +297,7 @@ def generate_geomap(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             layerName=data_source.query,
             transformations=transformations,
@@ -343,7 +352,7 @@ def generate_single_line(
 
     return json.loads(
         template.render(
-            grid_pos=generate_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             fields=fields,
             type=data_source.query,
@@ -353,37 +362,8 @@ def generate_single_line(
         )
     )
 
-def generate_field_calendar(
-    location: str,
-    field_name: str,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
-)-> dict:
-    """This function generates a field for a calendar panel.
-    It uses the field.json template to generate the field.
-    #TODO: Change language after rebasing
-
-    Args:
-        location (str): The station name
-        field_name (str): The field name that we want to query
-
-    Returns:
-        dict: The fields of the panel as it is in field.json
-    """
-    template = env.get_template("field.json")
-    path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
-    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
-
-    return json.loads(
-        template.render(
-            path=path,
-            name=field_name,
-            type=type,
-        )
-    )
 
 def generate_target(
-    config: Calendar,
     location: str, # example: "Pza. de España"
     field_name: str, # example: "O3"
     index_field: int, # between 0 and 3
@@ -396,10 +376,10 @@ def generate_target(
     Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
 
     Args:
-        config (Calendar): We use this to get the type of the query
         location (str): The station name
         field_name (str): The field name that we want to query
         index_field (int): The index of the field 
+        data_source (Datasource): Used to generate the field and the type of the query
 
     Returns:
         dict: The fields of the panel as it is in target.json
@@ -407,52 +387,19 @@ def generate_target(
     attributes = ["Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
     fields = []
-    refID = location + "-" + attributes[index_field]
+    ref_id = location + "-" + attributes[index_field]
 
     fields.append(generate_field_calendar(location, field_name, types_resolver, data_source))
     fields.append(generate_field_calendar(location, "dateObserved", types_resolver, data_source))
 
     return json.loads(
         template.render(
-            refID=refID,
+            ref_id=ref_id,
             fields=fields,
             type=data_source.query,
         )
     )
 
-def callendar_grid_pos(id: int) -> dict:
-    """This function generated the grid position for a calendar panel
-    h -> height of the panel (32 fits)
-    w -> width of the panel (24)
-    x -> x position, = col * w
-    y -> y position, = col * h
-
-    Args:
-        col (int): Used the id of the panel
-
-    Returns:
-        dict: grid position of the pane as it is in grid_pos.json
-    """
-    template = env.get_template("grid_pos.json")
-
-    return json.loads(
-        template.render(
-            h=32,
-            w=24,
-            x=(id % 2) * 24,
-            y = (id // 2) * 8, # assuming that other panels are 8 high
-        )
-    )
-    
-
-# locations
-# [ "Pza. de España", "Escuelas Aguirre", "Avda. Ramón y Cajal", "Arturo Soria", "Villaverde", 
-# "Farolillo", "Casa de Campo", "Barajas Pueblo", "Pza. del Carmen", "Moratalaz", "Cuatro Caminos", 
-# "Barrio del Pilar", "Vallecas", "Mendez Alvaro", "Castellana", "Parque del Retiro", "Plaza Castilla", 
-# "Ensanche de Vallecas", "Urb. Embajada", "Pza. Fernández Ladreda", "Sanchinarro", "El Pardo", "Juan Carlos I", "Tres Olivos" ]
-
-# elements
-# CO, NO, NO2, NOx, SO2, PM2.5, PM10, O3, TOL, BEN, EBE, TCH, CH4, NMHC
 
 def generate_calendar(
     id: int,
@@ -486,18 +433,17 @@ def generate_calendar(
 
     for location in locations:
         for element in elements:
-            targets.append(generate_target(config, location, element, elements.index(element), type_resolver, data_source))
+            index_field = elements.index(element)
+            targets.append(
+                generate_target(location, element, index_field, type_resolver, data_source)
+            )
 
     return json.loads(
         template.render(
-            grid_pos=callendar_grid_pos(id),
+            grid_pos=generate_grid_pos(id, config.type),
             id=id,
             targets=targets,
             type=data_source.query,
             title=title,
         )
     )
-
-    
-
-    

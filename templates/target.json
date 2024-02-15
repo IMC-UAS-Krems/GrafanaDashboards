@@ -17,6 +17,6 @@
         ]
       ],
     "queryParams": "",
-    "refId": {{ refID | jsonify }},
+    "refId": {{ ref_id | jsonify }},
     "urlPath": ""
 }

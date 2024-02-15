@@ -41,3 +41,8 @@ Holds the model for the dashboard.
 
 **Note 2**: All models have `traces` for fields to be extracted, only geomap has `data`. Is there a technical reason for this or can we change it to `traces` to be consistent?
 
+# locations
+[ "Pza. de España", "Escuelas Aguirre", "Avda. Ramón y Cajal", "Arturo Soria", "Villaverde", "Farolillo", "Casa de Campo", "Barajas Pueblo", "Pza. del Carmen", "Moratalaz", "Cuatro Caminos", "Barrio del Pilar", "Vallecas", "Mendez Alvaro", "Castellana", "Parque del Retiro", "Plaza Castilla", "Ensanche de Vallecas", "Urb. Embajada", "Pza. Fernández Ladreda", "Sanchinarro", "El Pardo", "Juan Carlos I", "Tres Olivos" ]
+
+# elements
+CO, NO, NO2, NOx, SO2, PM2.5, PM10, O3, TOL, BEN, EBE, TCH, CH4, NMHC
