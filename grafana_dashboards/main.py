@@ -16,6 +16,7 @@ from panel_gen import (
     generate_geomap,
     generate_pie_chart,
     generate_single_line,
+    generate_calendar,
 )
 
 from model import Config
@@ -50,6 +51,7 @@ panel_mapping: dict[str, Callable] = {
     "geomap": generate_geomap,
     "pie_chart": generate_pie_chart,
     "smartcomm-simpleline-panel": generate_single_line,
+    "smartcomm-calendar-panel": generate_calendar,
 }
 
 

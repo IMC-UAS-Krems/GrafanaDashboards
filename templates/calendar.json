@@ -1,0 +1,18 @@
+{
+    "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
+    "options": {
+        "colorPicker": [
+            "rgb(213, 23, 23)",
+            "rgb(255, 255, 255)",
+            "rgb(0, 0, 255)"
+        ]
+    },
+    "targets": {{ targets | jsonify }},
+    "title": {{ title | jsonify }},
+    "type": "smartcomm-calendar-panel"
+}

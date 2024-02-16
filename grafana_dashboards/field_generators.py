@@ -48,6 +48,35 @@ def generate_time_field_for_single_line(field_name: str) -> dict:
         )
     )
 
+def generate_field_calendar(
+    location: str,
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+)-> dict:
+    """This function generates a field for a calendar panel.
+    It uses the field.json template to generate the field.
+
+    Args:
+        location (str): The station name
+        field_name (str): The field name that we want to query
+
+    Returns:
+        dict: The fields of the panel as it is in field.json
+    """
+    template = env.get_template("field.json")
+    path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+    type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
+
+    return json.loads(
+        template.render(
+            path=path,
+            language="jsonata",
+            name=field_name,
+            type=type,
+        )
+    )
+
 
 def generate_coordiante_field(coordinates: Coordinates) -> dict:
     """This function generates the field for the coordinate of the geomap panel.
