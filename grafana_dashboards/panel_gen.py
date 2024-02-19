@@ -10,7 +10,7 @@ import json
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine
 from types_resolver import TypesResolver
 from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, generate_field_calendar, Coordinates
 
@@ -389,9 +389,9 @@ def generate_target(
     fields = []
     ref_id = location + "-" + attributes[index_field]
 
-    fields.append(generate_field_calendar(location, field_name, types_resolver, data_source))
+    
     fields.append(generate_field_calendar(location, "dateObserved", types_resolver, data_source))
-
+    fields.append(generate_field_calendar(location, field_name, types_resolver, data_source))
     return json.loads(
         template.render(
             ref_id=ref_id,
@@ -421,6 +421,42 @@ def generate_calendar(
         dict: The fields of the panel as it is in calendar.json
     """
     template = env.get_template("calendar.json")
+    targets = []
+    locations = []
+
+    for location in config.traces:
+        if location == "dateObserved":
+            break
+        locations.append(location)
+
+    elements = config.traces[len(locations)+1:]
+
+    for location in locations:
+        for element in elements:
+            index_field = elements.index(element)
+            targets.append(
+                generate_target(location, element, index_field, type_resolver, data_source)
+            )
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=targets,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
+
+def generate_multiline(
+    id: int,
+    config: MultiLine,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    template = env.get_template("multiline.json")
     targets = []
     locations = []
 

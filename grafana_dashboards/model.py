@@ -67,7 +67,12 @@ class Calendar(BaseModel):
     source: str
     traces: list[str]  
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar
+class MultiLine(BaseModel):
+    type: Literal["smartcomm-multiplelinechart-panel"]
+    source: str
+    traces: list[str]
+
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine
 
 
 class Application(BaseModel):
