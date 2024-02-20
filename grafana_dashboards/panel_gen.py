@@ -12,7 +12,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from trasformations import concat_fields, group_by, organize
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine
 from types_resolver import TypesResolver
-from field_generators import generate_field, generate_coordiante_field, generate_time_field_for_single_line, generate_field_calendar, Coordinates
+from field_generators import generate_field, generate_coordiante_field, generate_field_multiline_and_calendar, generate_time_field_for_single_line, Coordinates
 
 
 env = Environment(
@@ -41,6 +41,10 @@ def generate_grid_pos(col: int, panel_type:str) -> dict:
 
     if panel_type == "smartcomm-calendar-panel":
         h = 32
+        w = 24
+        x = (col % 2) * 24
+    elif panel_type == "smartcomm-multiplelinechart-panel":
+        h = 16
         w = 24
         x = (col % 2) * 24
     else:
@@ -81,7 +85,6 @@ def generate_bar_chart(
         dict: The fields of the panel as it is in barchart.json
     """
     template = env.get_template("barchart.json")
-
     fields = []
     transformations = []
     extra_data = []
@@ -369,6 +372,7 @@ def generate_target(
     index_field: int, # between 0 and 3
     types_resolver: TypesResolver,
     data_source: Datasource,
+    panel_type: str,
 )-> dict:
     """This function generates the target for the calendar panel.
     Each target is a query for a specific location and a specific field.
@@ -389,9 +393,13 @@ def generate_target(
     fields = []
     ref_id = location + "-" + attributes[index_field]
 
+    if panel_type == "smartcomm-calendar-panel":
+        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
+        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
+    elif panel_type == "smartcomm-multiplelinechart-panel":
+        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
+        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
     
-    fields.append(generate_field_calendar(location, "dateObserved", types_resolver, data_source))
-    fields.append(generate_field_calendar(location, field_name, types_resolver, data_source))
     return json.loads(
         template.render(
             ref_id=ref_id,
@@ -435,7 +443,7 @@ def generate_calendar(
         for element in elements:
             index_field = elements.index(element)
             targets.append(
-                generate_target(location, element, index_field, type_resolver, data_source)
+                generate_target(location, element, index_field, type_resolver, data_source, config.type)
             )
 
     return json.loads(
@@ -456,6 +464,15 @@ def generate_multiline(
     data_source: Datasource,
     title: str,
 ) -> dict:
+    """This function generates the multiline panel.
+    I assumed that traces is structured like in the calendar panel
+    locations, dateObserved, elements
+    elements are a max of 4
+    locations cannot have any special characters because the plugin does not accept them.
+
+    Returns:
+        dict: The fields of the panel as it is in multiline.json
+    """
     template = env.get_template("multiline.json")
     targets = []
     locations = []
@@ -471,7 +488,7 @@ def generate_multiline(
         for element in elements:
             index_field = elements.index(element)
             targets.append(
-                generate_target(location, element, index_field, type_resolver, data_source)
+                generate_target(location, element, index_field, type_resolver, data_source, config.type)
             )
 
     return json.loads(

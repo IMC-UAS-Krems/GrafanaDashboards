@@ -48,13 +48,43 @@ def generate_time_field_for_single_line(field_name: str) -> dict:
         )
     )
 
-def generate_field_calendar(
+# def generate_field_calendar(
+#     location: str,
+#     field_name: str,
+#     types_resolver: TypesResolver,
+#     data_source: Datasource,
+# )-> dict:
+#     """This function generates a field for a calendar panel.
+#     It uses the field.json template to generate the field.
+
+#     Args:
+#         location (str): The station name
+#         field_name (str): The field name that we want to query
+
+#     Returns:
+#         dict: The fields of the panel as it is in field.json
+#     """
+#     template = env.get_template("field.json")
+#     path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+#     type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
+
+#     return json.loads(
+#         template.render(
+#             path=path,
+#             language="jsonata",
+#             name=field_name,
+#             type=type,
+#         )
+#     )
+
+
+def generate_field_multiline_and_calendar(
     location: str,
     field_name: str,
     types_resolver: TypesResolver,
     data_source: Datasource,
 )-> dict:
-    """This function generates a field for a calendar panel.
+    """This function generates a field for a multiple line panel or a calendar panel.
     It uses the field.json template to generate the field.
 
     Args:
@@ -65,7 +95,11 @@ def generate_field_calendar(
         dict: The fields of the panel as it is in field.json
     """
     template = env.get_template("field.json")
-    path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+    if field_name == "dateObserved":
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? $toMillis(`{field_name}`.value) : null)'
+    else:
+
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
     type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
 
     return json.loads(
