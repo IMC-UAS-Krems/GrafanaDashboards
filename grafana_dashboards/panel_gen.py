@@ -43,10 +43,17 @@ def generate_grid_pos(col: int, panel_type:str) -> dict:
         h = 32
         w = 24
         x = (col % 2) * 24
+<<<<<<< HEAD
     elif panel_type == "smartcomm-multiplelinechart-panel":
         h = 16
         w = 24
         x = (col % 2) * 24
+=======
+    elif panel_type == "smartcomm-extremevalues-panel":
+        h = 16
+        w = 12
+        x = (col % 2) * 12
+>>>>>>> 280740d (grid position for extreme val pannel + docstrings)
     else:
         h = 8
         w = 12
@@ -369,9 +376,19 @@ def generate_field_extreme_values(
     field_name: str,
     location: str, 
     title:str,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
 )-> dict:
+    """Extreme values pannel needs the following data points
+    attributes, value, unit
+    we are simulating attributes and unit
+
+    Args:
+        field_name (str): the field to be extracted 
+        location (str): location that we filter by
+        title (str): the title of the query (attributes | value | unit)
+
+    Returns:
+        dict: fields as it is in fields.json
+    """
     template = env.get_template("field.json")
     if title == "attribute" or title == "unit":
         path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? "{field_name}" : "{field_name}")'
@@ -433,12 +450,21 @@ def generate_target(
         elif attributes[index_field] == "Luftdruck":
             unit = "Pa"
 
+<<<<<<< HEAD
         # attribute
         fields.append(generate_field_extreme_values(field_name, location, "attribute", types_resolver, data_source)) #? "NO" : "NO"
         # value
         fields.append(generate_field_extreme_values(field_name, location, "value", types_resolver, data_source)) # ? `NO`.value : null
         # unit
         fields.append(generate_field_extreme_values(unit, location, "unit", types_resolver, data_source)) # ? unit : unit
+=======
+    # attribute
+    fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
+    # value
+    fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
+    # unit
+    fields.append(generate_field_extreme_values(unit, location, "unit")) # ? unit : unit
+>>>>>>> 280740d (grid position for extreme val pannel + docstrings)
 
     return json.loads(
         template.render(
@@ -503,6 +529,12 @@ def generate_extreme_values(
     data_source: Datasource,
     title: str,
 ) -> dict:
+    """Same as Calendar and Multiline this pannel needs the following attributes
+    location and elements (we don't need dateObserved)
+
+    Returns:
+        dict: The fields in the pannel as it is in extreme_values.json
+    """
     template = env.get_template("extreme_values.json")
     templates = []
     locations = []
