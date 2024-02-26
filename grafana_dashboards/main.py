@@ -18,6 +18,7 @@ from panel_gen import (
     generate_single_line,
     generate_calendar,
     generate_multiline,
+    generate_extreme_values,
 )
 
 from model import Config
@@ -54,6 +55,7 @@ panel_mapping: dict[str, Callable] = {
     "smartcomm-simpleline-panel": generate_single_line,
     "smartcomm-calendar-panel": generate_calendar,
     "smartcomm-multiplelinechart-panel": generate_multiline,
+    "smartcomm-extremevalues-panel": generate_extreme_values,
 }
 
 

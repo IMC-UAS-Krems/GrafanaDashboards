@@ -10,7 +10,7 @@ import json
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine
+from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine, ExtremeValues
 from types_resolver import TypesResolver
 from field_generators import generate_field, generate_coordiante_field, generate_field_multiline_and_calendar, generate_time_field_for_single_line, Coordinates
 
@@ -365,6 +365,30 @@ def generate_single_line(
         )
     )
 
+def generate_field_extreme_values(
+    field_name: str,
+    location: str, 
+    title:str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+)-> dict:
+    template = env.get_template("field.json")
+    if title == "attribute" or title == "unit":
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? "{field_name}" : "{field_name}")'
+        type = "string"
+    elif title == "value":
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+        type = "number"
+    
+    return json.loads(
+        template.render(
+            path= path,
+            language="jsonata",
+            name= title,
+            type=type,
+        )
+    )
+
 
 def generate_target(
     location: str, # example: "Pza. de España"
@@ -399,7 +423,23 @@ def generate_target(
     elif panel_type == "smartcomm-multiplelinechart-panel":
         fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
         fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
-    
+    elif panel_type == "smartcomm-extremevalues-panel":
+        if attributes[index_field] == "Feinstaub":
+            unit = "µg/m³"
+        elif attributes[index_field] == "Luftfeuchtigkeit":
+            unit = "%"
+        elif attributes[index_field] == "Temperatur":
+            unit = "°C"
+        elif attributes[index_field] == "Luftdruck":
+            unit = "Pa"
+
+        # attribute
+        fields.append(generate_field_extreme_values(field_name, location, "attribute", types_resolver, data_source)) #? "NO" : "NO"
+        # value
+        fields.append(generate_field_extreme_values(field_name, location, "value", types_resolver, data_source)) # ? `NO`.value : null
+        # unit
+        fields.append(generate_field_extreme_values(unit, location, "unit", types_resolver, data_source)) # ? unit : unit
+
     return json.loads(
         template.render(
             ref_id=ref_id,
@@ -455,6 +495,42 @@ def generate_calendar(
             title=title,
         )
     )
+
+def generate_extreme_values(
+    id: int,
+    config: ExtremeValues,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    template = env.get_template("extreme_values.json")
+    templates = []
+    locations = []
+
+    for location in config.traces:
+        if location == "dateObserved":
+            break
+        locations.append(location)
+
+    elements = config.traces[len(locations)+1:]
+
+    for location in locations:
+        for element in elements:
+            index_field = elements.index(element)
+            templates.append(
+                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+            )
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=templates,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
 
 
 def generate_multiline(

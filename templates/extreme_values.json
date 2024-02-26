@@ -1,0 +1,14 @@
+{
+    "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": "2RGTUW4Sk"
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
+    "options": {
+        "threshold": 80
+    },
+    "targets": {{ targets | jsonify }},
+    "title": {{ title | jsonify }},
+    "type": "smartcomm-extremevalues-panel"
+}
