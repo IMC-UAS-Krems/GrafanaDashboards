@@ -17,6 +17,7 @@ from panel_gen import (
     generate_pie_chart,
     generate_single_line,
     generate_calendar,
+    generate_multiline,
 )
 
 from model import Config
@@ -52,6 +53,7 @@ panel_mapping: dict[str, Callable] = {
     "pie_chart": generate_pie_chart,
     "smartcomm-simpleline-panel": generate_single_line,
     "smartcomm-calendar-panel": generate_calendar,
+    "smartcomm-multiplelinechart-panel": generate_multiline,
 }
 
 
