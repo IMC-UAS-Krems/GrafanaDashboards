@@ -448,11 +448,11 @@ def generate_target(
             unit = "Pa"
 
         # attribute
-        fields.append(generate_field_extreme_values(field_name, location, "attribute", types_resolver, data_source)) #? "NO" : "NO"
+        fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
         # value
-        fields.append(generate_field_extreme_values(field_name, location, "value", types_resolver, data_source)) # ? `NO`.value : null
+        fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
         # unit
-        fields.append(generate_field_extreme_values(unit, location, "unit", types_resolver, data_source)) # ? unit : unit
+        fields.append(generate_field_extreme_values(unit, location, "unit")) # ? unit : unit
 
     return json.loads(
         template.render(
