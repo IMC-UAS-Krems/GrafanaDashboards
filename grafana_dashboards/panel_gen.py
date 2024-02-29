@@ -164,10 +164,13 @@ def generate_pie_chart(
     """
     template = env.get_template("piechart.json")
     fields = []
+    transformations = []
 
     for field_name in config.traces:
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
+
+    transformations.append(filter_by_value("$id_filter", "id"))
 
     return json.loads(
         template.render(
@@ -177,6 +180,7 @@ def generate_pie_chart(
             fields=fields,
             type=data_source.query,
             title=title,
+            transformations=transformations,
         )
     )
 
