@@ -21,7 +21,7 @@ def group_by(
         "id": "groupBy",
         "options": {
             "fields": {
-                group_by : {
+                group_by: {
                     "aggregations": [],
                     "operation": "groupby",
                 }
@@ -92,5 +92,37 @@ def organize(
             if len(index_by_name) > 0
             else {},
             "renameByName": rename_by_name,
+        },
+    }
+
+
+def filter_by_value(
+    value: str,
+    field_name: str,
+    match_condition: str = "any",
+    filter_type: str = "include",
+    match: str = "equal",
+) -> dict:
+    """Filter by value
+
+    Args:
+        match_condition: can be `any` or `all`
+        match_type: can be `include` or `exclude`
+        match: can be `equal`, `notEqual`, `regex`, `isNull`, `isNotNull` (not sure about this)
+
+    Returns:
+        transformation dict
+    """
+    return {
+        "id": "filterByValue",
+        "options": {
+            "filters": [
+                {
+                    "config": {"id": match, "options": {"value": value}},
+                    "fieldName": field_name,
+                }
+            ],
+            "match": match_condition,
+            "type": filter_type,
         },
     }

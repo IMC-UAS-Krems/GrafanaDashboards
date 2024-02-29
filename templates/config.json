@@ -37,7 +37,7 @@
     "style": "dark",
     "tags": [],
     "templating": {
-      "list": []
+      "list": {{templating | jsonify}}
     },
     "time": {
       "from": "2020-05-05T23:00:00.000Z",

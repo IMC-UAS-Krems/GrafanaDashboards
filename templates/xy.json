@@ -85,5 +85,6 @@
     ],
     "title": {{title | jsonify}},
     "transparent": false,
-    "type": "xychart"
+    "type": "xychart",
+    "transformations": {{transformations | jsonify}}
   }
