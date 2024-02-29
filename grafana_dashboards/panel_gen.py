@@ -43,17 +43,14 @@ def generate_grid_pos(col: int, panel_type:str) -> dict:
         h = 32
         w = 24
         x = (col % 2) * 24
-<<<<<<< HEAD
     elif panel_type == "smartcomm-multiplelinechart-panel":
         h = 16
         w = 24
         x = (col % 2) * 24
-=======
     elif panel_type == "smartcomm-extremevalues-panel":
         h = 16
         w = 12
         x = (col % 2) * 12
->>>>>>> 280740d (grid position for extreme val pannel + docstrings)
     else:
         h = 8
         w = 12
@@ -450,21 +447,12 @@ def generate_target(
         elif attributes[index_field] == "Luftdruck":
             unit = "Pa"
 
-<<<<<<< HEAD
         # attribute
         fields.append(generate_field_extreme_values(field_name, location, "attribute", types_resolver, data_source)) #? "NO" : "NO"
         # value
         fields.append(generate_field_extreme_values(field_name, location, "value", types_resolver, data_source)) # ? `NO`.value : null
         # unit
         fields.append(generate_field_extreme_values(unit, location, "unit", types_resolver, data_source)) # ? unit : unit
-=======
-    # attribute
-    fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
-    # value
-    fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
-    # unit
-    fields.append(generate_field_extreme_values(unit, location, "unit")) # ? unit : unit
->>>>>>> 280740d (grid position for extreme val pannel + docstrings)
 
     return json.loads(
         template.render(
