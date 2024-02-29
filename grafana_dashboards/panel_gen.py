@@ -5,6 +5,7 @@ Also contains the function to generate the grid position for the panels.
 Returns:
     dict: The fields of the panels as it is in the templates
 """
+from enum import Enum
 import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -12,7 +13,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from trasformations import concat_fields, group_by, organize
 from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine, ExtremeValues
 from types_resolver import TypesResolver
-from field_generators import generate_field, generate_coordiante_field, generate_field_multiline_and_calendar, generate_time_field_for_single_line, Coordinates
+from field_generators import generate_field, generate_coordiante_field, generate_field_extreme_values, generate_field_multiline_and_calendar, generate_time_field_for_single_line, Coordinates
 
 
 env = Environment(
@@ -369,39 +370,12 @@ def generate_single_line(
         )
     )
 
-def generate_field_extreme_values(
-    field_name: str,
-    location: str, 
-    title:str,
-)-> dict:
-    """Extreme values pannel needs the following data points
-    attributes, value, unit
-    we are simulating attributes and unit
 
-    Args:
-        field_name (str): the field to be extracted 
-        location (str): location that we filter by
-        title (str): the title of the query (attributes | value | unit)
-
-    Returns:
-        dict: fields as it is in fields.json
-    """
-    template = env.get_template("field.json")
-    if title == "attribute" or title == "unit":
-        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? "{field_name}" : "{field_name}")'
-        type = "string"
-    elif title == "value":
-        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
-        type = "number"
-    
-    return json.loads(
-        template.render(
-            path= path,
-            language="jsonata",
-            name= title,
-            type=type,
-        )
-    )
+class Unit(Enum):
+    Feinstaub = "µg/m³"
+    Luftfeuchtigkeit = "%"
+    Temperatur = "°C"
+    Luftdruck = "Pa"
 
 
 def generate_target(
@@ -412,7 +386,7 @@ def generate_target(
     data_source: Datasource,
     panel_type: str,
 )-> dict:
-    """This function generates the target for the calendar panel.
+    """This function generates the target for calendar, multiline and extreme values panels.
     Each target is a query for a specific location and a specific field.
     Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
     Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
@@ -420,7 +394,7 @@ def generate_target(
     Args:
         location (str): The station name
         field_name (str): The field name that we want to query
-        index_field (int): The index of the field 
+        index_field (int): The index of the field, needed for extreme values panel 
         data_source (Datasource): Used to generate the field and the type of the query
 
     Returns:
@@ -438,21 +412,9 @@ def generate_target(
         fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
         fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
     elif panel_type == "smartcomm-extremevalues-panel":
-        if attributes[index_field] == "Feinstaub":
-            unit = "µg/m³"
-        elif attributes[index_field] == "Luftfeuchtigkeit":
-            unit = "%"
-        elif attributes[index_field] == "Temperatur":
-            unit = "°C"
-        elif attributes[index_field] == "Luftdruck":
-            unit = "Pa"
-
-        # attribute
         fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
-        # value
         fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
-        # unit
-        fields.append(generate_field_extreme_values(unit, location, "unit")) # ? unit : unit
+        fields.append(generate_field_extreme_values(Unit[attributes[index_field]].value, location, "unit")) # ? unit : unit
 
     return json.loads(
         template.render(
@@ -510,6 +472,7 @@ def generate_calendar(
         )
     )
 
+
 def generate_extreme_values(
     id: int,
     config: ExtremeValues,
@@ -550,7 +513,6 @@ def generate_extreme_values(
             title=title,
         )
     )
-
 
 
 def generate_multiline(
