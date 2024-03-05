@@ -5,15 +5,34 @@ Also contains the function to generate the grid position for the panels.
 Returns:
     dict: The fields of the panels as it is in the templates
 """
+
 from enum import Enum
 import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from trasformations import concat_fields, group_by, organize
-from model import BarChart, Datasource, PieChart, XYChart, TimeSeries, GeoMap, SingleLine, Calendar, MultiLine, ExtremeValues
+from trasformations import concat_fields, filter_by_value, group_by, organize
+from model import (
+    BarChart,
+    Datasource,
+    ExtremeValues,
+    PieChart,
+    XYChart,
+    TimeSeries,
+    GeoMap,
+    SingleLine,
+    Calendar,
+    MultiLine,
+)
 from types_resolver import TypesResolver
-from field_generators import generate_field, generate_coordiante_field, generate_field_extreme_values, generate_field_multiline_and_calendar, generate_time_field_for_single_line, Coordinates
+from field_generators import (
+    generate_field,
+    generate_coordiante_field,
+    generate_field_extreme_values,
+    generate_field_multiline_and_calendar,
+    generate_time_field_for_single_line,
+    Coordinates,
+)
 
 
 env = Environment(
@@ -23,7 +42,7 @@ env = Environment(
 env.filters["jsonify"] = json.dumps
 
 
-def generate_grid_pos(col: int, panel_type:str) -> dict:
+def generate_grid_pos(col: int, panel_type: str) -> dict:
     """This function generated the grid position for a panel
     h -> height of the panel
     w -> width of the panel
@@ -106,7 +125,7 @@ def generate_bar_chart(
 
         fields.extend(generated_fields)
 
-    config.traces.extend(extra_data)  
+    config.traces.extend(extra_data)
 
     transformations.append(group_by("id", config.traces))
     transformations.append(
@@ -152,10 +171,13 @@ def generate_pie_chart(
     """
     template = env.get_template("piechart.json")
     fields = []
+    transformations = []
 
     for field_name in config.traces:
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
+
+    transformations.append(filter_by_value("$id_filter", "id"))
 
     return json.loads(
         template.render(
@@ -165,6 +187,7 @@ def generate_pie_chart(
             fields=fields,
             type=data_source.query,
             title=title,
+            transformations=transformations,
         )
     )
 
@@ -190,11 +213,13 @@ def generate_xy_chart(
     """
     template = env.get_template("xy.json")
     fields = []
+    transformations = []
 
     for field_name in config.traces:
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
 
+    transformations.append(filter_by_value("$id_filter", "id"))
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id, config.type),
@@ -202,6 +227,7 @@ def generate_xy_chart(
             fields=fields,
             type=data_source.query,
             title=title,
+            transformations=transformations,
         )
     )
 
@@ -227,10 +253,13 @@ def generate_time_series(
     """
     template = env.get_template("timeseries.json")
     fields = []
+    transformations = []
 
     for field_name in config.traces:
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
+
+    transformations.append(filter_by_value("$id_filter", "id"))
 
     return json.loads(
         template.render(
@@ -239,6 +268,7 @@ def generate_time_series(
             fields=fields,
             type=data_source.query,
             title=title,
+            transformations=transformations,
         )
     )
 
@@ -292,7 +322,7 @@ def generate_geomap(
     config.data.append(Coordinates.LONGITUDE.value["name"])
     config.data.append(Coordinates.LATITUDE.value["name"])
 
-    config.data.extend(extra_data)  
+    config.data.extend(extra_data)
 
     transformations.append(group_by("id", config.data))
     transformations.append(
@@ -317,11 +347,11 @@ def generate_geomap(
 
 
 def generate_single_line(
-        id: int,
-        config: SingleLine,
-        type_resolver: TypesResolver,
-        data_source: Datasource,
-        title: str,
+    id: int,
+    config: SingleLine,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
 ) -> dict:
     """This function generates the single line panel for the plugin smartcomm-simpleline-panel.
     Needed to create a separate function for field generation
@@ -349,7 +379,9 @@ def generate_single_line(
     transformations.append(
         organize(
             rename_by_name={
-                f"{name} (last)": name for name in config.traces if name != "dateObserved"
+                f"{name} (last)": name
+                for name in config.traces
+                if name != "dateObserved"
             },
         )
     )
@@ -366,7 +398,7 @@ def generate_single_line(
             type=data_source.query,
             title=title,
             transformations=transformations,
-            y_axis_label = y_axis_label,
+            y_axis_label=y_axis_label,
         )
     )
 
@@ -379,14 +411,14 @@ class Unit(Enum):
 
 
 def generate_target(
-    location: str, # example: "Pza. de España"
-    field_name: str, # example: "O3"
-    index_field: int, # between 0 and 3
+    location: str,  # example: "Pza. de España"
+    field_name: str,  # example: "O3"
+    index_field: int,  # between 0 and 3
     types_resolver: TypesResolver,
     data_source: Datasource,
     panel_type: str,
-)-> dict:
-    """This function generates the target for calendar, multiline and extreme values panels.
+) -> dict:
+    """This function generates the target for the calendar panel.
     Each target is a query for a specific location and a specific field.
     Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
     Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
@@ -394,7 +426,7 @@ def generate_target(
     Args:
         location (str): The station name
         field_name (str): The field name that we want to query
-        index_field (int): The index of the field, needed for extreme values panel 
+        index_field (int): The index of the field, needed for extreme values panel
         data_source (Datasource): Used to generate the field and the type of the query
 
     Returns:
@@ -406,15 +438,39 @@ def generate_target(
     ref_id = location + "-" + attributes[index_field]
 
     if panel_type == "smartcomm-calendar-panel":
-        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
-        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, field_name, types_resolver, data_source
+            )
+        )
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, "dateObserved", types_resolver, data_source
+            )
+        )
     elif panel_type == "smartcomm-multiplelinechart-panel":
-        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
-        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, "dateObserved", types_resolver, data_source
+            )
+        )
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, field_name, types_resolver, data_source
+            )
+        )
     elif panel_type == "smartcomm-extremevalues-panel":
-        fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
-        fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
-        fields.append(generate_field_extreme_values(Unit[attributes[index_field]].value, location, "unit")) # ? unit : unit
+        fields.append(
+            generate_field_extreme_values(field_name, location, "attribute")
+        )  # ? "NO" : "NO"
+        fields.append(
+            generate_field_extreme_values(field_name, location, "value")
+        )  # ? `NO`.value : null
+        fields.append(
+            generate_field_extreme_values(
+                Unit[attributes[index_field]].value, location, "unit"
+            )
+        )  # ? unit : unit
 
     return json.loads(
         template.render(
@@ -453,13 +509,20 @@ def generate_calendar(
             break
         locations.append(location)
 
-    elements = config.traces[len(locations)+1:]
+    elements = config.traces[len(locations) + 1 :]
 
     for location in locations:
         for element in elements:
             index_field = elements.index(element)
             targets.append(
-                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+                generate_target(
+                    location,
+                    element,
+                    index_field,
+                    type_resolver,
+                    data_source,
+                    config.type,
+                )
             )
 
     return json.loads(
@@ -495,13 +558,20 @@ def generate_extreme_values(
             break
         locations.append(location)
 
-    elements = config.traces[len(locations)+1:]
+    elements = config.traces[len(locations) + 1 :]
 
     for location in locations:
         for element in elements:
             index_field = elements.index(element)
             templates.append(
-                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+                generate_target(
+                    location,
+                    element,
+                    index_field,
+                    type_resolver,
+                    data_source,
+                    config.type,
+                )
             )
 
     return json.loads(
@@ -540,13 +610,20 @@ def generate_multiline(
             break
         locations.append(location)
 
-    elements = config.traces[len(locations)+1:]
+    elements = config.traces[len(locations) + 1 :]
 
     for location in locations:
         for element in elements:
             index_field = elements.index(element)
             targets.append(
-                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+                generate_target(
+                    location,
+                    element,
+                    index_field,
+                    type_resolver,
+                    data_source,
+                    config.type,
+                )
             )
 
     return json.loads(
