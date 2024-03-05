@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from grafana_dashboards.var_templating import create_template_variable
+from var_templating import create_template_variable
 from panel_gen import (
     generate_bar_chart,
     generate_xy_chart,
