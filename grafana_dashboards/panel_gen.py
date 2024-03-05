@@ -64,6 +64,10 @@ def generate_grid_pos(col: int, panel_type: str) -> dict:
         h = 16
         w = 24
         x = (col % 2) * 24
+    elif panel_type == "smartcomm-extremevalues-panel":
+        h = 16
+        w = 12
+        x = (col % 2) * 12
     else:
         h = 8
         w = 12
@@ -396,6 +400,13 @@ def generate_single_line(
     )
 
 
+class Unit(Enum):
+    Feinstaub = "µg/m³"
+    Luftfeuchtigkeit = "%"
+    Temperatur = "°C"
+    Luftdruck = "Pa"
+
+
 def generate_target(
     location: str,  # example: "Pza. de España"
     field_name: str,  # example: "O3"
@@ -412,7 +423,7 @@ def generate_target(
     Args:
         location (str): The station name
         field_name (str): The field name that we want to query
-        index_field (int): The index of the field
+        index_field (int): The index of the field, needed for extreme values panel 
         data_source (Datasource): Used to generate the field and the type of the query
 
     Returns:
@@ -435,16 +446,12 @@ def generate_target(
             )
         )
     elif panel_type == "smartcomm-multiplelinechart-panel":
-        fields.append(
-            generate_field_multiline_and_calendar(
-                location, "dateObserved", types_resolver, data_source
-            )
-        )
-        fields.append(
-            generate_field_multiline_and_calendar(
-                location, field_name, types_resolver, data_source
-            )
-        )
+        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
+        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
+    elif panel_type == "smartcomm-extremevalues-panel":
+        fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
+        fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
+        fields.append(generate_field_extreme_values(Unit[attributes[index_field]].value, location, "unit")) # ? unit : unit
 
     return json.loads(
         template.render(
@@ -504,6 +511,48 @@ def generate_calendar(
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
             targets=targets,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
+
+def generate_extreme_values(
+    id: int,
+    config: ExtremeValues,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    """Same as Calendar and Multiline this pannel needs the following attributes
+    location and elements (we don't need dateObserved)
+
+    Returns:
+        dict: The fields in the pannel as it is in extreme_values.json
+    """
+    template = env.get_template("extreme_values.json")
+    templates = []
+    locations = []
+
+    for location in config.traces:
+        if location == "dateObserved":
+            break
+        locations.append(location)
+
+    elements = config.traces[len(locations)+1:]
+
+    for location in locations:
+        for element in elements:
+            index_field = elements.index(element)
+            templates.append(
+                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+            )
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=templates,
             type=data_source.query,
             title=title,
         )

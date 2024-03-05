@@ -72,7 +72,12 @@ class MultiLine(BaseModel):
     source: str
     traces: list[str]
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine
+class ExtremeValues(BaseModel):
+    type: Literal["smartcomm-extremevalues-panel"]
+    source: str
+    traces: list[str]  
+
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine | ExtremeValues
 
 
 class Application(BaseModel):

@@ -77,6 +77,40 @@ def generate_time_field_for_single_line(field_name: str) -> dict:
 #         )
 #     )
 
+def generate_field_extreme_values(
+    field_name: str,
+    location: str, 
+    title:str,
+)-> dict:
+    """Extreme values pannel needs the following data points
+    attributes, value, unit
+    we are simulating attributes and unit
+
+    Args:
+        field_name (str): the field to be extracted 
+        location (str): location that we filter by
+        title (str): the title of the query (attributes | value | unit)
+
+    Returns:
+        dict: fields as it is in fields.json
+    """
+    template = env.get_template("field.json")
+    if title == "attribute" or title == "unit":
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? "{field_name}" : "{field_name}")'
+        type = "string"
+    elif title == "value":
+        path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
+        type = "number"
+    
+    return json.loads(
+        template.render(
+            path= path,
+            language="jsonata",
+            name= title,
+            type=type,
+        )
+    )
+
 
 def generate_field_multiline_and_calendar(
     location: str,

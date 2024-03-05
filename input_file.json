@@ -113,6 +113,18 @@
                     "NO2",
                     "NOx"
                 ]
+            },
+            "Extreme Values" : {
+                "type" : "smartcomm-extremevalues-panel",
+                "source" : "AirQualityObserved",
+                "traces":[
+                    "Arturo Soria", "Escuelas Aguirre", "Villaverde", 
+                    "dateObserved",
+                    "SO2",
+                    "NO",
+                    "NO2",
+                    "NOx"
+                ]
             }
         }
     },
