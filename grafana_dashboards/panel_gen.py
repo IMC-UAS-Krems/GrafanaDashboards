@@ -6,6 +6,7 @@ Returns:
     dict: The fields of the panels as it is in the templates
 """
 
+from enum import Enum
 import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -14,6 +15,7 @@ from trasformations import concat_fields, filter_by_value, group_by, organize
 from model import (
     BarChart,
     Datasource,
+    ExtremeValues,
     PieChart,
     XYChart,
     TimeSeries,
@@ -26,6 +28,7 @@ from types_resolver import TypesResolver
 from field_generators import (
     generate_field,
     generate_coordiante_field,
+    generate_field_extreme_values,
     generate_field_multiline_and_calendar,
     generate_time_field_for_single_line,
     Coordinates,
@@ -423,7 +426,7 @@ def generate_target(
     Args:
         location (str): The station name
         field_name (str): The field name that we want to query
-        index_field (int): The index of the field, needed for extreme values panel 
+        index_field (int): The index of the field, needed for extreme values panel
         data_source (Datasource): Used to generate the field and the type of the query
 
     Returns:
@@ -446,12 +449,28 @@ def generate_target(
             )
         )
     elif panel_type == "smartcomm-multiplelinechart-panel":
-        fields.append(generate_field_multiline_and_calendar(location, "dateObserved", types_resolver, data_source))
-        fields.append(generate_field_multiline_and_calendar(location, field_name, types_resolver, data_source))
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, "dateObserved", types_resolver, data_source
+            )
+        )
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, field_name, types_resolver, data_source
+            )
+        )
     elif panel_type == "smartcomm-extremevalues-panel":
-        fields.append(generate_field_extreme_values(field_name, location, "attribute")) #? "NO" : "NO"
-        fields.append(generate_field_extreme_values(field_name, location, "value")) # ? `NO`.value : null
-        fields.append(generate_field_extreme_values(Unit[attributes[index_field]].value, location, "unit")) # ? unit : unit
+        fields.append(
+            generate_field_extreme_values(field_name, location, "attribute")
+        )  # ? "NO" : "NO"
+        fields.append(
+            generate_field_extreme_values(field_name, location, "value")
+        )  # ? `NO`.value : null
+        fields.append(
+            generate_field_extreme_values(
+                Unit[attributes[index_field]].value, location, "unit"
+            )
+        )  # ? unit : unit
 
     return json.loads(
         template.render(
@@ -539,13 +558,20 @@ def generate_extreme_values(
             break
         locations.append(location)
 
-    elements = config.traces[len(locations)+1:]
+    elements = config.traces[len(locations) + 1 :]
 
     for location in locations:
         for element in elements:
             index_field = elements.index(element)
             templates.append(
-                generate_target(location, element, index_field, type_resolver, data_source, config.type)
+                generate_target(
+                    location,
+                    element,
+                    index_field,
+                    type_resolver,
+                    data_source,
+                    config.type,
+                )
             )
 
     return json.loads(
