@@ -502,14 +502,11 @@ def generate_calendar(
     """
     template = env.get_template("calendar.json")
     targets = []
-    locations = []
 
-    for location in config.traces:
-        if location == "dateObserved":
-            break
-        locations.append(location)
-
-    elements = config.traces[len(locations) + 1 :]
+    locations = config.locations
+    if "dateObserved" in config.traces:
+        config.traces.remove("dateObserved")
+    elements = config.traces
 
     for location in locations:
         for element in elements:
@@ -550,20 +547,17 @@ def generate_extreme_values(
         dict: The fields in the pannel as it is in extreme_values.json
     """
     template = env.get_template("extreme_values.json")
-    templates = []
-    locations = []
-
-    for location in config.traces:
-        if location == "dateObserved":
-            break
-        locations.append(location)
-
-    elements = config.traces[len(locations) + 1 :]
+    targets = []
+    
+    locations = config.locations
+    if "dateObserved" in config.traces:
+        config.traces.remove("dateObserved")
+    elements = config.traces
 
     for location in locations:
         for element in elements:
             index_field = elements.index(element)
-            templates.append(
+            targets.append(
                 generate_target(
                     location,
                     element,
@@ -578,7 +572,7 @@ def generate_extreme_values(
         template.render(
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
-            targets=templates,
+            targets=targets,
             type=data_source.query,
             title=title,
         )
@@ -603,14 +597,11 @@ def generate_multiline(
     """
     template = env.get_template("multiline.json")
     targets = []
-    locations = []
 
-    for location in config.traces:
-        if location == "dateObserved":
-            break
-        locations.append(location)
-
-    elements = config.traces[len(locations) + 1 :]
+    locations = config.locations
+    if "dateObserved" in config.traces:
+        config.traces.remove("dateObserved")
+    elements = config.traces
 
     for location in locations:
         for element in elements:
