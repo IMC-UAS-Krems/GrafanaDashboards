@@ -31,6 +31,7 @@
                 "type": "pie_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "NOx",
                     "O3",
                     "NO2",
@@ -41,6 +42,7 @@
                 "type": "bar_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "stationCode",
                     "NOx",
                     "O3",
@@ -52,6 +54,7 @@
                 "type": "xy_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "dateObserved",
                     "NOx",
                     "O3",
@@ -63,6 +66,7 @@
                 "type": "timeseries",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "dateObserved",
                     "NOx",
                     "O3",
