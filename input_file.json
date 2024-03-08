@@ -31,6 +31,7 @@
                 "type": "pie_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "NOx",
                     "O3",
                     "NO2",
@@ -41,6 +42,7 @@
                 "type": "bar_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "stationCode",
                     "NOx",
                     "O3",
@@ -52,6 +54,7 @@
                 "type": "xy_chart",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "dateObserved",
                     "NOx",
                     "O3",
@@ -63,6 +66,7 @@
                 "type": "timeseries",
                 "source": "AirQualityObserved",
                 "traces": [
+                    "id",
                     "dateObserved",
                     "NOx",
                     "O3",
@@ -93,8 +97,21 @@
             "Calendar" : {
                 "type" : "smartcomm-calendar-panel",
                 "source" : "AirQualityObserved",
+                "locations":[
+                    "Pza. de España", 
+                    "Escuelas Aguirre", 
+                    "Avda. Ramón y Cajal", 
+                    "Arturo Soria", 
+                    "Villaverde", 
+                    "Farolillo", 
+                    "Casa de Campo", 
+                    "Barajas Pueblo", 
+                    "Pza. del Carmen", 
+                    "Moratalaz", 
+                    "Cuatro Caminos"
+                ],
                 "traces":[
-                    "Pza. de España", "Escuelas Aguirre", "Avda. Ramón y Cajal", "Arturo Soria", "Villaverde", "Farolillo", "Casa de Campo", "Barajas Pueblo", "Pza. del Carmen", "Moratalaz", "Cuatro Caminos",
+                    
                     "dateObserved",
                     "CO",
                     "NO",
@@ -105,8 +122,13 @@
             "Multi Line Panel" : {
                 "type" : "smartcomm-multiplelinechart-panel",
                 "source" : "AirQualityObserved",
+                "locations":
+                [
+                    "Arturo Soria", 
+                    "Escuelas Aguirre", 
+                    "Villaverde"
+                ],
                 "traces":[
-                    "Arturo Soria", "Escuelas Aguirre", "Villaverde", 
                     "dateObserved",
                     "SO2",
                     "NO",
@@ -117,8 +139,13 @@
             "Extreme Values" : {
                 "type" : "smartcomm-extremevalues-panel",
                 "source" : "AirQualityObserved",
-                "traces":[
-                    "Arturo Soria", "Escuelas Aguirre", "Villaverde", 
+                "locations":
+                [
+                    "Arturo Soria", 
+                    "Escuelas Aguirre", 
+                    "Villaverde"
+                ],
+                "traces":[ 
                     "dateObserved",
                     "SO2",
                     "NO",

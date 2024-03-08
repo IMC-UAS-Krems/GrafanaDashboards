@@ -57,25 +57,33 @@ class XYChart(BaseModel):
     source: str
     traces: list[str]  # first trace is x axis
 
+
 class SingleLine(BaseModel):
     type: Literal["smartcomm-simpleline-panel"]
     source: str
     traces: list[str] 
 
+
 class Calendar(BaseModel):
     type: Literal["smartcomm-calendar-panel"]
     source: str
+    locations: list[str]
     traces: list[str]  
+
 
 class MultiLine(BaseModel):
     type: Literal["smartcomm-multiplelinechart-panel"]
     source: str
+    locations: list[str]
     traces: list[str]
+
 
 class ExtremeValues(BaseModel):
     type: Literal["smartcomm-extremevalues-panel"]
     source: str
+    locations: list[str]
     traces: list[str]  
+
 
 Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine | ExtremeValues
 
