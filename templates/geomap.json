@@ -15,6 +15,12 @@
             "viz": false
           }
         },
+        "links": [
+          {
+            "title": "Explore",
+            "url": "grafana-dashboad?var-id_filter=${__data.fields.id}"
+          }
+        ],
         "mappings": [],
         "thresholds": {
           "mode": "absolute",
