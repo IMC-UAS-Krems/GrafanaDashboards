@@ -435,7 +435,7 @@ def generate_target(
     attributes = ["Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
     fields = []
-    ref_id = location + "-" + attributes[index_field]
+    ref_id = location + "_" + attributes[index_field]
 
     if panel_type == "smartcomm-calendar-panel":
         fields.append(
