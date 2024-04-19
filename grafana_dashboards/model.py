@@ -84,8 +84,14 @@ class ExtremeValues(BaseModel):
     locations: list[str]
     traces: list[str]  
 
+class BulletGraph(BaseModel):
+    type: Literal["smartcomm-bulletgraph-panel"]
+    source: str
+    locations: list[str]
+    traces: list[str]
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine | ExtremeValues
+
+Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine | ExtremeValues | BulletGraph
 
 
 class Application(BaseModel):

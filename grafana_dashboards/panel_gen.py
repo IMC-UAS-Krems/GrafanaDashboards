@@ -14,6 +14,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from trasformations import concat_fields, filter_by_value, group_by, organize
 from model import (
     BarChart,
+    BulletGraph,
     Datasource,
     ExtremeValues,
     PieChart,
@@ -71,6 +72,10 @@ def generate_grid_pos(col: int, panel_type: str) -> dict:
         h = 16
         w = 12
         x = (col % 2) * 12
+    elif panel_type == "smartcomm-bulletgraph-panel":
+        h = 10
+        w = 24
+        x = (col % 2) * 24
     else:
         h = 8
         w = 12
@@ -417,6 +422,7 @@ def generate_target(
     types_resolver: TypesResolver,
     data_source: Datasource,
     panel_type: str,
+    hide: bool = False,
 ) -> dict:
     """This function generates the target for the calendar panel.
     Each target is a query for a specific location and a specific field.
@@ -432,10 +438,13 @@ def generate_target(
     Returns:
         dict: The fields of the panel as it is in target.json
     """
-    attributes = ["Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"]
+    attributes = [ "Temperatur", "Luftfeuchtigkeit", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
     fields = []
-    ref_id = location + "_" + attributes[index_field]
+    if panel_type == "smartcomm-calendar-panel":
+        ref_id = location + "-" + attributes[index_field]
+    else:
+        ref_id = location + "_" + attributes[index_field]
 
     if panel_type == "smartcomm-calendar-panel":
         fields.append(
@@ -471,12 +480,22 @@ def generate_target(
                 Unit[attributes[index_field]].value, location, "unit"
             )
         )  # ? unit : unit
+    elif panel_type == "smartcomm-bulletgraph-panel":
+        fields.append(
+            generate_field_multiline_and_calendar(
+                location, "dateObserved", types_resolver, data_source
+            )
+        )
+        fields.append(
+            generate_field_extreme_values(field_name, location, "value")
+        )
 
     return json.loads(
         template.render(
             ref_id=ref_id,
             fields=fields,
             type=data_source.query,
+            hide=hide,
         )
     )
 
@@ -616,6 +635,59 @@ def generate_multiline(
                     config.type,
                 )
             )
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=targets,
+            type=data_source.query,
+            title=title,
+        )
+    )
+
+def generate_bullet_graph(
+    id: int,
+    config: BulletGraph,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    template = env.get_template("bulletpanel.json")
+    targets = []
+
+    locations = config.locations
+    if "dateObserved" in config.traces:
+        config.traces.remove("dateObserved")
+    elements = config.traces
+
+
+    for location in locations:
+        for element in elements:
+            index_field = elements.index(element)
+            if elements.index(element) == 0 and locations.index(location) == 0:
+                targets.append(
+                generate_target(
+                    location,
+                    element,
+                    index_field,
+                    type_resolver,
+                    data_source,
+                    config.type,
+                    hide = True,
+                )
+            )
+            else:   
+                targets.append(
+                    generate_target(
+                        location,
+                        element,
+                        index_field,
+                        type_resolver,
+                        data_source,
+                        config.type,
+                    )
+                )
 
     return json.loads(
         template.render(
