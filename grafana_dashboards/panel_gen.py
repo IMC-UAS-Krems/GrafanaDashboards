@@ -424,8 +424,8 @@ def generate_target(
     panel_type: str,
     hide: bool = False,
 ) -> dict:
-    """This function generates the target for the calendar panel.
-    Each target is a query for a specific location and a specific field.
+    """This function generates the target for multiple smartcomm panels.
+    Each target is a group of queries for a specific location and a specific field.
     Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
     Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
 
@@ -434,6 +434,7 @@ def generate_target(
         field_name (str): The field name that we want to query
         index_field (int): The index of the field, needed for extreme values panel
         data_source (Datasource): Used to generate the field and the type of the query
+        hide (bool, optional): It is used as a fix for the bullet graph panel. Defaults to False.
 
     Returns:
         dict: The fields of the panel as it is in target.json
@@ -441,11 +442,16 @@ def generate_target(
     attributes = [ "Temperatur", "Luftfeuchtigkeit", "Feinstaub", "Luftdruck"]
     template = env.get_template("target.json")
     fields = []
+
+    # because the label of the target is location-attribute we need to connect them
+    # in the new version we have pannels which expect dash but others expect underscore
     if panel_type == "smartcomm-calendar-panel":
         ref_id = location + "-" + attributes[index_field]
     else:
         ref_id = location + "_" + attributes[index_field]
 
+    # also there is a specific order in which the queries need to be called
+    # that is why we have so many if statements
     if panel_type == "smartcomm-calendar-panel":
         fields.append(
             generate_field_multiline_and_calendar(
@@ -653,6 +659,24 @@ def generate_bullet_graph(
     data_source: Datasource,
     title: str,
 ) -> dict:
+    """This function generates the bullet graph panel.
+    Each group of queries location-element is a target.
+    This is created by target function.
+    Bullet graph pannel has a bug 
+    The panel does not work with more than 11 groups
+    That is why we hide one target 
+    There is also a max of 3 locations and 4 elements that can be displayed
+
+    Args:
+        id (int): id of the panel
+        config (BulletGraph): definition of the panel
+        type_resolver (TypesResolver): resolver for the types
+        data_source (Datasource): source of the data
+        title (str): title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in bulletpanel.json
+    """
     template = env.get_template("bulletpanel.json")
     targets = []
 
