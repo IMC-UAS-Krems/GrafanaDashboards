@@ -5,6 +5,7 @@
         "uid": "2RGTUW4Sk"
     },
     "fields": {{ fields | jsonify }},
+    "hide": {{ hide | jsonify }},
     "method": "GET",
     "params": [
         [

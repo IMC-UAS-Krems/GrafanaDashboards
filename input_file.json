@@ -152,6 +152,23 @@
                     "NO2",
                     "NOx"
                 ]
+            }, 
+            "Bullet Graph Panel" : {
+                "type" : "smartcomm-bulletgraph-panel",
+                "source" : "AirQualityObserved",
+                "locations":
+                [
+                    "Arturo Soria", 
+                    "Escuelas Aguirre", 
+                    "Villaverde"
+                ],
+                "traces":[
+                    "dateObserved",
+                    "SO2",
+                    "NO",
+                    "NO2",
+                    "NOx"
+                ]
             }
         }
     },
