@@ -1,3 +1,24 @@
+{% set predefined_list = [
+  {
+    "hide": 2,
+    "name": "query0",
+    "query": "",
+    "skipUrlSync": false,
+    "type": "constant"
+  },
+  {
+    "current": {},
+    "hide": 0,
+    "name": "time",
+    "options": [],
+    "query": "",
+    "skipUrlSync": false,
+    "type": "textbox"
+  }
+] %}
+
+{% set combined_list = predefined_list + templating %}
+
 {
     "annotations": {
       "list": [
@@ -37,7 +58,7 @@
     "style": "dark",
     "tags": [],
     "templating": {
-      "list": {{templating | jsonify}}
+      "list": {{ combined_list | jsonify }}
     },
     "time": {
       "from": "2020-05-05T23:00:00.000Z",
@@ -49,4 +70,4 @@
     "uid": {{ uid | jsonify }},
     "version": 23,
     "weekStart": ""
-  }
+}
