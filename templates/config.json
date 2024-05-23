@@ -1,7 +1,7 @@
 {% set predefined_list = [
   {
     "hide": 2,
-    "name": "query0",
+    "name": "attribute",
     "query": "",
     "skipUrlSync": false,
     "type": "constant"
