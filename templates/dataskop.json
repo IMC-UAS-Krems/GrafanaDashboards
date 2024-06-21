@@ -2,22 +2,12 @@
     "cacheDurationSeconds": 300,
     "datasource": {
         "type": "marcusolsson-json-datasource",
-        "uid": "2RGTUW4Sk"
+        "uid": {{ datasource_uid | jsonify }}
     },
     "fields": {{ fields | jsonify }},
     "hide": {{ hide | jsonify }},
     "method": "GET",
-    "params": [
-        [
-          "limit",
-          "1000"
-        ],
-        [
-          "type",
-          {{type | jsonify}}
-        ]
-      ],
     "queryParams": "",
     "refId": {{ ref_id | jsonify }},
-    "urlPath": ""
+    "urlPath": "/api/measurementresult/query/advanced/{{measurement_id}}/50/0?orderby=timestamp%20desc"
 }

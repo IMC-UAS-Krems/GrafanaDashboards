@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource", 
-      "uid": "2RGTUW4Sk"
+      "uid": {{ datasource_uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
@@ -67,30 +67,7 @@
       "xTickLabelRotation": 90,
       "xTickLabelSpacing": 0
     },
-    "targets": [
-      {
-        "cacheDurationSeconds": 300,
-        "datasource": {
-          "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
-        },
-        "fields": {{ fields | jsonify }},
-        "method": "GET",
-        "params": [
-          [
-            "limit",
-            "1000"
-          ],
-          [
-            "type",
-            {{type | jsonify}}
-          ]
-        ],
-        "queryParams": "",
-        "refId": "A",
-        "urlPath": ""
-      }
-    ],
+    "targets": {{ targets | jsonify}},
     "title": {{ title | jsonify }},
     "transformations": {{ transformations | jsonify }},
     "transparent": false,

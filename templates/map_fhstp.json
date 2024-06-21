@@ -1,0 +1,105 @@
+{
+    "datasource": {
+      "type": "marcusolsson-json-datasource",
+      "uid": {{datasource_uid | jsonify}}
+    },
+    "fieldConfig": {
+      "defaults": {
+        "color": {
+          "mode": "thresholds"
+        },
+        "custom": {
+          "hideFrom": {
+            "legend": false,
+            "tooltip": false,
+            "viz": false
+          }
+        },
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green"
+            },
+            {
+              "color": "red",
+              "value": 80
+            }
+          ]
+        }
+      },
+      "overrides": []
+    },
+    "gridPos": {{ grid_pos | jsonify }},
+    "id": {{ id | jsonify }},
+    "options": {
+      "basemap": {
+        "config": {},
+        "name": "Layer 0",
+        "type": "default"
+      },
+      "controls": {
+        "mouseWheelZoom": true,
+        "showAttribution": true,
+        "showDebug": false,
+        "showMeasure": false,
+        "showScale": false,
+        "showZoom": true
+      },
+      "layers": [
+        {
+          "config": {
+            "showLegend": true,
+            "style": {
+              "color": {
+                "fixed": "dark-green"
+              },
+              "opacity": 0.4,
+              "rotation": {
+                "fixed": 0,
+                "max": 360,
+                "min": -360,
+                "mode": "mod"
+              },
+              "size": {
+                "fixed": 5,
+                "max": 15,
+                "min": 2
+              },
+              "symbol": {
+                "fixed": "img/icons/marker/circle.svg",
+                "mode": "fixed"
+              },
+
+              "textConfig": {
+                "fontSize": 12,
+                "offsetX": 0,
+                "offsetY": 0,
+                "textAlign": "center",
+                "textBaseline": "middle"
+              }
+            }
+          },
+          "tooltip": true,
+          "type": "markers"
+        }
+      ],
+      "tooltip": {
+        "mode": "details"
+      },
+      "view": {
+        "allLayers": true,
+        "id": "fit",
+        "lat": 0,
+        "lon": 0,
+        "padding": 10,
+        "zoom": 15
+      }
+    },
+    "pluginVersion": "9.3.6",
+    "targets": {{targets | jsonify}},
+    "title": {{title | jsonify}},
+    "transparent": false,
+    "type": "smartcomm-map-panel"
+  }
