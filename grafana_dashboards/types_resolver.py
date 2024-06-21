@@ -39,7 +39,14 @@ class TypesResolver:
             "AirQualityObserved": "https://raw.githubusercontent.com/smart-data-models/dataModel.Environment/master/AirQualityObserved/schema.json",
             "PointOfInterest": "https://raw.githubusercontent.com/smart-data-models/dataModel.PointOfInterest/master/PointOfInterest/schema.json",
         }
-        self._logger.setLevel(logging.INFO)
+        self.dataskop_cache = {}
+        self._logger.setLevel(logging.DEBUG)
+        self.dataskop_types: dict[int, Type] = {
+            1: "number",
+            2: "string",
+            3: "time",
+            4: "boolean",
+        }
 
     def resolve(
         self, model_type: str, path_to_resolve: str, data_source_url: str
@@ -90,6 +97,32 @@ class TypesResolver:
             return result
 
         return None
+
+    def resolve_dataskop(
+        self, base_url: str, token: str, measurement_id: int
+    ) -> Type | None:
+        if data_type := (
+            self.dataskop_cache.get(base_url)
+            and self.dataskop_cache[base_url].get(measurement_id)
+        ):
+            self._logger.debug(f"Dataskop cache hit for {base_url} {measurement_id}")
+            return self.dataskop_types[data_type]
+
+        response = requests.get(
+            f"{base_url}/api/measurementresult/query/{measurement_id}/1/0",
+            headers={"Authorization": token},
+        )
+        if not response.ok:
+            return None
+        print(response.content)
+
+        data_type = response.json()["measurementResults"][0]["valueType"]
+        if base_url not in self.dataskop_cache:
+            self.dataskop_cache[base_url] = {}
+
+        self.dataskop_cache[base_url][measurement_id] = data_type
+
+        return self.dataskop_types[data_type]
 
     def _resolve_schema(
         self, url: str, path_to_resolve: str

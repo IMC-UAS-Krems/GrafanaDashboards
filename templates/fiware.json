@@ -1,0 +1,23 @@
+{
+    "cacheDurationSeconds": 300,
+    "datasource": {
+        "type": "marcusolsson-json-datasource",
+        "uid": {{ datasource_uid | jsonify }}
+    },
+    "fields": {{ fields | jsonify }},
+    "hide": {{ hide | jsonify }},
+    "method": "GET",
+    "params": [
+        [
+          "limit",
+          "1000"
+        ],
+        [
+          "type",
+          {{type | jsonify}}
+        ]
+      ],
+    "queryParams": "",
+    "refId": {{ ref_id | jsonify }},
+    "urlPath": ""
+}

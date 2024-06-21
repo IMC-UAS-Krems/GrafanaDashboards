@@ -1,0 +1,50 @@
+{
+  "cacheDurationSeconds": 5,
+  "datasource": {
+    "type": "marcusolsson-json-datasource",
+    "uid": {{datasource_uid | jsonify}}
+  },
+  "fields": [
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].id",
+      "language": "jsonata",
+      "name": "id"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].information.name",
+      "language": "jsonata",
+      "name": "name"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].(latestResult != null ? latestResult.location.latitude : null)",
+      "language": "jsonata",
+      "name": "latitude"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].(latestResult != null ? latestResult.location.longitude: null)",
+      "language": "jsonata",
+      "name": "longitude"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].(latestResult != null ? latestResult.location.altitude: null)",
+      "language": "jsonata",
+      "name": "altitude"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].(latestResult != null ? latestResult.timeStamp: 0)",
+      "language": "jsonata",
+      "name": "timeStamp"
+    },
+    {
+      "jsonPath": "$.measurementDefinitionsWithLatestResults[*].(latestResult != null ? latestResult.value: 0)",
+      "language": "jsonata",
+      "name": "value"
+    }
+  ],
+  "hide": false,
+  "method": "GET",
+  "params": [],
+  "queryParams": "",
+  "refId": {{ref_id | jsonify}},
+  "urlPath": "/api/project/measurementdefinitionslatestresults/{{location_id}}"
+}

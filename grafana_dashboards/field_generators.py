@@ -4,16 +4,17 @@ The fields are used to query the data from the datasource.
 Because some fields are different for different panels, we have multiple functions.
 
 Returns:
-    dict | tuple[list[dict], list | None]: The fields as they are in field.json 
+    dict | tuple[list[dict], list | None]: The fields as they are in field.json
     or a list of fields and a list of groups
 """
+
 from enum import Enum
 import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from model import Datasource
-from types_resolver import Keys, TypesResolver
+from .model import Datasource
+from .types_resolver import Keys, TypesResolver
 
 
 env = Environment(
@@ -22,13 +23,14 @@ env = Environment(
 )
 env.filters["jsonify"] = json.dumps
 
+
 class Coordinates(Enum):
     LONGITUDE = {"name": "lon", "index": 0}
     LATITUDE = {"name": "lat", "index": 1}
 
 
 def generate_time_field_for_single_line(field_name: str) -> dict:
-    """This function is for the moment only for the single line panel. 
+    """This function is for the moment only for the single line panel.
     Generates the field for the time field which needs to be jsonpath.
 
     Args:
@@ -41,12 +43,13 @@ def generate_time_field_for_single_line(field_name: str) -> dict:
 
     return json.loads(
         template.render(
-            path=f'$[*].{field_name}.value',
-            language = "jsonpath",
+            path=f"$[*].{field_name}.value",
+            language="jsonpath",
             name=field_name,
             type="time",
         )
     )
+
 
 # def generate_field_calendar(
 #     location: str,
@@ -77,17 +80,18 @@ def generate_time_field_for_single_line(field_name: str) -> dict:
 #         )
 #     )
 
-def generate_field_extreme_values(
+
+def generate_fiware_field_extreme_values(
     field_name: str,
-    location: str, 
-    title:str,
-)-> dict:
+    location: str,
+    title: str,
+) -> dict:
     """Extreme values pannel needs the following data points
     attributes, value, unit
     we are simulating attributes and unit
 
     Args:
-        field_name (str): the field to be extracted 
+        field_name (str): the field to be extracted
         location (str): location that we filter by
         title (str): the title of the query (attributes | value | unit)
 
@@ -101,23 +105,23 @@ def generate_field_extreme_values(
     elif title == "value":
         path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
         type = "number"
-    
+
     return json.loads(
         template.render(
-            path= path,
+            path=path,
             language="jsonata",
-            name= title,
+            name=title,
             type=type,
         )
     )
 
 
-def generate_field_multiline_and_calendar(
+def generate_fiware_field(
     location: str,
     field_name: str,
     types_resolver: TypesResolver,
     data_source: Datasource,
-)-> dict:
+) -> dict:
     """This function generates a field for a multiple line panel or a calendar panel.
     It uses the field.json template to generate the field.
 
@@ -132,7 +136,6 @@ def generate_field_multiline_and_calendar(
     if field_name == "dateObserved":
         path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? $toMillis(`{field_name}`.value) : null)'
     else:
-
         path = f'$[*][stationName.value="{location}"].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)'
     type = types_resolver.resolve(data_source.query, field_name, data_source.uri)
 
@@ -157,7 +160,7 @@ def generate_coordiante_field(coordinates: Coordinates) -> dict:
     return json.loads(
         template.render(
             path=f'$[*].location.value.coordinates[{coordinates.value["index"]}]',
-            language = "jsonata",
+            language="jsonata",
             name=coordinates.value["name"],
             type="number",
         )
@@ -179,11 +182,11 @@ def _generate_field_for_object(
         sub_fields (Keys): The subfields of the object
 
     Returns:
-        tuple[list[dict], list | None]: list of fields as it is in field.json, 
+        tuple[list[dict], list | None]: list of fields as it is in field.json,
         list of fields that needs to be concatenated by the transformation
     """
     template = env.get_template("field.json")
-    to_return = [] #TODO: change to None, if it always one element, why is it a list?
+    to_return = []  # TODO: change to None, if it always one element, why is it a list?
     group = [field_name]
 
     for key in sub_fields:
@@ -195,7 +198,7 @@ def _generate_field_for_object(
             json.loads(
                 template.render(
                     path=path,
-                    language = "jsonata",
+                    language="jsonata",
                     name=key,
                     type=inner_type,
                 )
@@ -207,15 +210,13 @@ def _generate_field_for_object(
 
 
 def generate_field(
-    field_name: str,
-    types_resolver: TypesResolver,
-    data_source: Datasource
+    field_name: str, types_resolver: TypesResolver, data_source: Datasource
 ) -> tuple[list[dict], list | None]:
     """This function generated a generic field for the field_name.
 
     INFO about `path` for `id` field:
     - `id` can also contain `timestamp` or `latest` and we want to remove it
-    - Example: Madrid-AirQualityObserved-28079004-2020-05-06T00:00:00 
+    - Example: Madrid-AirQualityObserved-28079004-2020-05-06T00:00:00
     change to -> Madrid-AirQualityObserved-28079004
 
     Args:
@@ -228,7 +229,9 @@ def generate_field(
         list of fields that needs to be concatenated by the transformation or None
     """
     if field_name == "id":
-        path = r'$[*].id.$replace(/-(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|latest)$/,"")'
+        path = (
+            r'$[*].id.$replace(/-(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|latest)$/,"")'
+        )
     else:
         path = f"$[*].($count(`{field_name}`) > 0 ? `{field_name}`.value : null)"
 
@@ -246,11 +249,43 @@ def generate_field(
             json.loads(
                 template.render(
                     path=path,
-                    language = "jsonata",
+                    language="jsonata",
                     name=field_name,
                     type=type,
                 )
             )
         ],
         None,
+    )
+
+
+def generate_time_field_for_dataskope() -> dict:
+    return json.loads(
+        env.get_template("field.json").render(
+            path="$[*].measurementResults.$toMillis(timeStamp)",
+            language="jsonata",
+            name="timeStamp",
+            type="time",
+        )
+    )
+
+
+def generate_value_field_for_dataskope(
+    alias: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+) -> dict:
+    data_type = types_resolver.resolve_dataskop(
+        data_source.uri,
+        data_source.config.token,
+        data_source.config.measurements[alias],
+    )
+
+    return json.loads(
+        env.get_template("field.json").render(
+            path="$[*].measurementResults.value",
+            language="jsonata",
+            name="value",
+            type=data_type,
+        )
     )
