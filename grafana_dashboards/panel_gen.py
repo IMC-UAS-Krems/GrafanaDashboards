@@ -16,6 +16,9 @@ from grafana_dashboards.trasformations import (
     filter_by_value,
     group_by,
     organize,
+    merge,
+    group_by_geomap,
+    group_by_bar_chart,
 )
 from grafana_dashboards.model import (
     BarChart,
@@ -37,6 +40,7 @@ from grafana_dashboards.field_generators import (
     generate_field,
     generate_time_field_for_dataskope,
     generate_value_field_for_dataskope,
+    generate_coordinate_field_dataskope,
     generate_coordiante_field,
     generate_fiware_field_extreme_values,
     generate_fiware_field,
@@ -109,6 +113,9 @@ def generate_target_dataskop(
     hide: bool = False,
     location: str | None = None,  # example: "Pza. de España"
     with_time: bool = True,
+    geomap: bool = False,
+    special_value: bool = False,
+    bar: bool = False
 ) -> dict:
     """This function generates the target for multiple smartcomm panels.
     Each target is a group of queries for a specific location and a specific field.
@@ -137,11 +144,25 @@ def generate_target_dataskop(
         else attributes[index_field]
     )
 
-    fields.append(
-        generate_value_field_for_dataskope(field_name, types_resolver, data_source)
-    )
+    if special_value:
+        fields.append(
+            generate_special_value_field_for_dataskope(field_name, types_resolver, data_source, attributes[index_field])
+        )
+        if bar:
+            fields.append(
+                bar_field(field_name, types_resolver, data_source, attributes[index_field])
+            )
+    else:
+        fields.append(
+            generate_value_field_for_dataskope(field_name, types_resolver, data_source)
+        )
+
     if with_time:
         fields.append(generate_time_field_for_dataskope())
+
+    if geomap:
+        fields.append(generate_coordinate_field_dataskope("longitude"))
+        fields.append(generate_coordinate_field_dataskope("latitude"))
 
     return json.loads(
         dataskop.render(
@@ -150,6 +171,50 @@ def generate_target_dataskop(
             hide=hide,
             ref_id=ref_id,
             measurement_id=data_source.config.measurements[field_name],
+        )
+    )
+
+def generate_special_value_field_for_dataskope(
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+    value_name: str,
+) -> dict:
+    data_type = types_resolver.resolve_dataskop(
+        data_source.uri,
+        data_source.config.token,
+        data_source.config.measurements[field_name],
+    )
+
+    return json.loads(
+        env.get_template("field.json").render(
+            path=f"$[*].measurementResults.${data_type}(value)",
+            language="jsonata",
+            name=value_name,
+            type=data_type,
+        )
+    )
+
+def bar_field(
+    field_name: str, 
+    types_resolver: TypesResolver, 
+    data_source: Datasource,
+    value_name: str,
+) -> dict:
+    data_type = types_resolver.resolve_dataskop(
+        data_source.uri,
+        data_source.config.token,
+        data_source.config.measurements[field_name],
+    )
+
+    field_name = field_name.split("_")[0]
+
+    return json.loads(
+        env.get_template("field.json").render(
+            path=f'$[*].measurementResults.($count(value) > 0 ? "{value_name}" :  "{value_name}")',
+            language="jsonata",
+            name="Fields",
+            type="string",
         )
     )
 
@@ -376,14 +441,19 @@ def generate_bar_chart_dataskop(
                 data_source=data_source,
                 panel_type=config.type,
                 hide=False,
+                special_value=True,
+                bar = True
             )
         )
+
+    transformations.append(merge())
+    transformations.append(group_by("Fields", config.traces))
 
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
-            xField="timeStamp",
+            xField="Fields",
             transformations=transformations,
             title=title,
             targets=targets,
@@ -529,8 +599,46 @@ def generate_pie_chart(
             id, config, type_resolver, data_source, title
         )
 
+def generate_xy_chart_dataskop(
+    id: int,
+    config: XYChart,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    template = env.get_template("xy.json")
+    targets = []
+    transformations = []
 
-def generate_xy_chart(
+    for i, field_name in enumerate(config.traces):
+        targets.append(
+            generate_target_dataskop(
+                field_name,
+                index_field=i,
+                types_resolver=type_resolver,
+                data_source=data_source,
+                panel_type=config.type,
+                hide=False,
+                special_value=True,
+            )
+        )
+
+    transformations.append(merge())
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            type=data_source.query,
+            title=title,
+            transformations=transformations,
+            targets=targets,
+            measurement_id=data_source.config.measurements[config.traces[0]],
+            datasource_uid=data_source.uid,
+        )
+    )
+
+def generate_xy_chart_fireware(
     id: int,
     config: XYChart,
     type_resolver: TypesResolver,
@@ -568,6 +676,18 @@ def generate_xy_chart(
             transformations=transformations,
         )
     )
+
+def generate_xy_chart(
+    id: int,
+    config: XYChart,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    if data_source.provider == DataSourceProvider.Fiware:
+        return generate_xy_chart_fireware(id, config, type_resolver, data_source, title)
+    elif data_source.provider == DataSourceProvider.Dataskop:
+        return generate_xy_chart_dataskop(id, config, type_resolver, data_source, title)
 
 
 def generate_time_series_fiware(
@@ -675,9 +795,48 @@ def generate_time_series(
         return generate_time_series_dataskop(
             id, config, type_resolver, data_source, title
         )
+    
+def generate_geomap_dataskop(
+    id: int,
+    config: GeoMap,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    template = env.get_template("geomap.json")
+    targets = []
+    transformations = []
 
+    for i, field_name in enumerate(config.data):
+        targets.append(
+            generate_target_dataskop(
+                field_name,
+                index_field=i,
+                types_resolver=type_resolver,
+                data_source=data_source,
+                panel_type=config.type,
+                hide=False,
+                geomap=True,
+                special_value=True,
+            )
+        )
 
-def generate_geomap(
+    transformations.append(merge())
+    transformations.append(group_by_geomap(["longitude", "latitude"], config.data))
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            layerName=data_source.query,
+            transformations=transformations,
+            title=title,
+            targets=targets,
+            datasource_uid=data_source.uid,
+        )
+    )
+
+def generate_geomap_fiware(
     id: int,
     config: GeoMap,
     type_resolver: TypesResolver,
@@ -748,6 +907,17 @@ def generate_geomap(
             title=title,
         )
     )
+
+def generate_geomap(id: int,
+    config: GeoMap,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    if data_source.provider == DataSourceProvider.Fiware:
+        return generate_geomap_fiware(id, config, type_resolver, data_source, title)
+    elif data_source.provider == DataSourceProvider.Dataskop:
+        return generate_geomap_dataskop(id, config, type_resolver, data_source, title)
 
 
 def generate_single_line_fiware(

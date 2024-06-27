@@ -31,12 +31,70 @@ def group_by(
 
     for field_name in fields:
         transformaton["options"]["fields"][field_name] = {
+            "aggregations": [ "last"],
+            "operation": "aggregate",
+        }
+
+    return transformaton
+
+def group_by_geomap(
+    group_by: list[str],
+    fields: list[str],
+) -> dict:
+    if group_by in fields:
+        fields.remove(group_by)
+
+    transformaton = {
+        "id": "groupBy",
+        "options": {
+            "fields": {
+                group_by[1]: {
+                    "aggregations": [],
+                    "operation": "groupby",
+                },
+                group_by[0]: {
+                    "aggregations": [],
+                    "operation": "groupby",
+                }
+            }
+        },
+    }
+
+    for field_name in fields:
+        transformaton["options"]["fields"][field_name] = {
             "aggregations": ["last"],
             "operation": "aggregate",
         }
 
     return transformaton
 
+def group_by_bar_chart(
+    group_by: str,
+    fields: list[str],
+) -> dict:
+    if group_by in fields:
+        fields.remove(group_by)
+
+    if 'timeStamp' in fields:
+        fields.remove('timeStamp')
+
+    transformaton = {
+        "id": "groupBy",
+        "options": {
+            "fields": {
+                group_by: {
+                    "aggregations": [],
+                    "operation": "groupby",
+                }
+            }
+        },
+    }
+
+    for field_name in fields:
+        transformaton["options"]["fields"][field_name] = {
+            "aggregations": ["lastNotNull"],
+            "operation": "aggregate",
+        }
 
 def concat_fields(alias: str, fields: list[str]) -> dict:
     """Concatenate all unique values from `fields` into a single field and rename it to `alias`
@@ -125,4 +183,21 @@ def filter_by_value(
             "match": match_condition,
             "type": filter_type,
         },
+    }
+
+
+def merge() -> dict:
+    """Merge fields into a single field
+
+    Args:
+        merge_name: name of the new field
+        fields: list of fields to merge
+        separator: separator to use when merging
+
+    Returns:
+        transformation dict
+    """
+    return {
+        "id": "merge",
+        "options": {}
     }

@@ -167,6 +167,7 @@ def generate_coordiante_field(coordinates: Coordinates) -> dict:
     )
 
 
+
 def _generate_field_for_object(
     field_name: str,
     sub_fields: Keys,
@@ -287,5 +288,15 @@ def generate_value_field_for_dataskope(
             language="jsonata",
             name="value",
             type=data_type,
+        )
+    )
+
+def generate_coordinate_field_dataskope(type: str) -> dict:
+    return json.loads(
+        env.get_template("field.json").render(
+            path=f"$.measurementResults.location.$number({type})",
+            language="jsonata",
+            name=type,
+            type="number",
         )
     )

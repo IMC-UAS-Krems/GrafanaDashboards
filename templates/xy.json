@@ -1,14 +1,16 @@
-{
+  {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ datasource_uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
         "color": {
-          "mode": "palette-classic"
+          "fixedColor": "green",
+          "mode": "fixed"
         },
         "custom": {
+          "axisBorderShow": false,
           "axisCenteredZero": false,
           "axisColorMode": "text",
           "axisLabel": "",
@@ -18,73 +20,90 @@
             "tooltip": false,
             "viz": false
           },
-          "lineWidth": 1,
           "pointSize": {
-            "fixed": 10
+            "fixed": 9
           },
           "scaleDistribution": {
             "type": "linear"
           },
           "show": "points"
         },
-        "mappings": [],
+        "mappings": [
+          {
+            "options": {
+              "Luftfeuchtigkeit": {
+                "color": "orange",
+                "index": 1
+              },
+              "Temperatur": {
+                "color": "yellow",
+                "index": 0
+              }
+            },
+            "type": "value"
+          }
+        ],
         "thresholds": {
           "mode": "absolute",
           "steps": [
             {
-              "color": "green"
-            },
-            {
-              "color": "red",
-              "value": 80
+              "color": "green",
+              "value": null
             }
           ]
         }
       },
-      "overrides": []
+      "overrides": [
+        {
+          "__systemRef": "hideSeriesFrom",
+          "matcher": {
+            "id": "byNames",
+            "options": {
+              "mode": "exclude",
+              "names": [
+                "Feinstaub"
+              ],
+              "prefix": "All except:",
+              "readOnly": true
+            }
+          },
+          "properties": [
+            {
+              "id": "custom.hideFrom",
+              "value": {
+                "legend": false,
+                "tooltip": false,
+                "viz": true
+              }
+            }
+          ]
+        }
+      ]
     },
     "gridPos": {{ grid_pos | jsonify }},
     "id": {{id | jsonify }},
     "options": {
+      "dims": {},
       "legend": {
         "calcs": [],
         "displayMode": "list",
-        "placement": "right",
+        "placement": "bottom",
         "showLegend": true
       },
-      "series": [],
+      "series": [
+        {
+          "pointColor": {}
+        }
+      ],
       "seriesMapping": "auto",
       "tooltip": {
         "mode": "single",
         "sort": "none"
       }
     },
-    "targets": [
-      {
-        "cacheDurationSeconds": 300,
-        "datasource": {
-          "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
-        },
-        "fields": {{ fields | jsonify }},
-        "method": "GET",
-        "params": [
-          [
-            "limit",
-            "1000"
-          ],
-          [
-            "type",
-            {{type | jsonify}}
-          ]
-        ],
-        "queryParams": "",
-        "refId": "A",
-        "urlPath": ""
-      }
-    ],
+    "pluginVersion": "10.2.2",
+    "targets": {{targets | jsonify}},
     "title": {{title | jsonify}},
-    "transparent": false,
-    "type": "xychart",
-    "transformations": {{transformations | jsonify}}
+    "transformations": {{transformations | jsonify}},
+    "type": "xychart"
   }

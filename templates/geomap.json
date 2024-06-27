@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": "2RGTUW4Sk"
+      "uid": {{ datasource_uid | jsonify }}
     },
     "fieldConfig": {
       "defaults": {
@@ -15,18 +15,14 @@
             "viz": false
           }
         },
-        "links": [
-          {
-            "title": "Explore",
-            "url": "grafana-dashboad?var-id_filter=${__data.fields.id}"
-          }
-        ],
+        "fieldMinMax": true,
         "mappings": [],
         "thresholds": {
           "mode": "absolute",
           "steps": [
             {
-              "color": "green"
+              "color": "green",
+              "value": null
             },
             {
               "color": "red",
@@ -77,7 +73,10 @@
                 "fixed": "img/icons/marker/circle.svg",
                 "mode": "fixed"
               },
-
+              "symbolAlign": {
+                "horizontal": "center",
+                "vertical": "center"
+              },
               "textConfig": {
                 "fontSize": 12,
                 "offsetX": 0,
@@ -87,7 +86,10 @@
               }
             }
           },
-          "name": {{layerName | jsonify}},
+          "location": {
+            "mode": "auto"
+          },
+          "name": "Layer 1",
           "tooltip": true,
           "type": "markers"
         }
@@ -100,38 +102,13 @@
         "id": "fit",
         "lat": 0,
         "lon": 0,
-        "padding": 10,
+        "padding": 50,
         "zoom": 15
       }
     },
-    "pluginVersion": "9.3.6",
-    "targets": [
-      {
-        "cacheDurationSeconds": 300,
-        "datasource": {
-          "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
-        },
-        "fields": {{ fields | jsonify }},
-        "method": "GET",
-        "params": [
-          [
-            "limit",
-            "1000"
-          ],
-          [
-            "type",
-            {{type | jsonify}}
-          ]
-        ],
-        "queryParams": "",
-        "refId": "A",
-        "urlPath": ""
-      }
-    ],
+    "pluginVersion": "10.2.2",
+    "targets": {{targets | jsonify}},
     "title": {{title | jsonify}},
-    "transparent": false,
-    "type": "geomap",
-    "transformations": {{transformations | jsonify}}
-
+    "transformations": {{transformations | jsonify}},
+    "type": "geomap"
   }
