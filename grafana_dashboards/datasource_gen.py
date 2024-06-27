@@ -4,7 +4,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from grafana_dashboards.model import DataSourceProvider, Datasource
 
 env = Environment(
-    loader=FileSystemLoader("templates"),
+    loader=FileSystemLoader("templates/datasources"),
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
@@ -35,12 +35,18 @@ def generate_datasource_dataskop(name: str, datasource: Datasource) -> dict:
     )
 
 
-def generate_datasource(name: str, datasource: Datasource) -> dict:
-    if datasource.provider == DataSourceProvider.Fiware:
-        return generate_datasource_fiware(name, datasource)
+def generate_datasources(datasources: dict[str, Datasource]) -> list[dict]:
+    sources = []
+    template = env.get_template("datasources.json")
 
-    elif datasource.provider == DataSourceProvider.Dataskop:
-        return generate_datasource_dataskop(name, datasource)
+    for name, datasource in datasources.items():
+        if datasource.provider == DataSourceProvider.Fiware:
+            sources.append(generate_datasource_fiware(name, datasource))
 
-    else:
-        raise ValueError(f"Unsupported datasource provider: {datasource.provider}")
+        elif datasource.provider == DataSourceProvider.Dataskop:
+            sources.append(generate_datasource_dataskop(name, datasource))
+
+        else:
+            raise ValueError(f"Unsupported datasource provider: {datasource.provider}")
+
+    return json.loads(template.render(datasources=sources))
