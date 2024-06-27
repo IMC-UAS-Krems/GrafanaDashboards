@@ -1,0 +1,6 @@
+{
+  "name": {{ name | jsonify }},
+  "uid": {{ uid | jsonify }},
+  "type": "marcusolsson-json-datasource",
+  "url": {{ url | jsonify }}
+}
