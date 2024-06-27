@@ -283,7 +283,7 @@ def generate_value_field_for_dataskope(
 
     return json.loads(
         env.get_template("field.json").render(
-            path="$[*].measurementResults.value",
+            path=f"$[*].measurementResults.${data_type}(value)",
             language="jsonata",
             name="value",
             type=data_type,

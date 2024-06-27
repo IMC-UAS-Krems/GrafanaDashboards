@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from grafana_dashboards.datasource_gen import generate_datasource
 from grafana_dashboards.var_templating import create_template_variable
 from grafana_dashboards.panel_gen import (
     generate_bar_chart,
@@ -78,7 +79,9 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
+    datasources = []
     templates = []
+    output = {"datasources": [], "dashboards": []}
 
     try:
         config_panels = config.application.panels
@@ -107,7 +110,10 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
         )
     )
 
-    return json.loads(
+    for name, datasource in config.data.sources.items():
+        datasources.append(generate_datasource(name, datasource))
+
+    dashboard = json.loads(
         template.render(
             id=1,
             panels=panels,
@@ -116,6 +122,8 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
             templating=templates,
         )
     )
+
+    return {"datasources": datasources, "dashboards": dashboard}
 
 
 @app.get("/")
