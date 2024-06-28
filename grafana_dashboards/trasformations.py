@@ -31,11 +31,12 @@ def group_by(
 
     for field_name in fields:
         transformaton["options"]["fields"][field_name] = {
-            "aggregations": [ "last"],
+            "aggregations": ["last"],
             "operation": "aggregate",
         }
 
     return transformaton
+
 
 def group_by_geomap(
     group_by: list[str],
@@ -55,7 +56,7 @@ def group_by_geomap(
                 group_by[0]: {
                     "aggregations": [],
                     "operation": "groupby",
-                }
+                },
             }
         },
     }
@@ -68,15 +69,13 @@ def group_by_geomap(
 
     return transformaton
 
+
 def group_by_bar_chart(
     group_by: str,
     fields: list[str],
 ) -> dict:
     if group_by in fields:
         fields.remove(group_by)
-
-    if 'timeStamp' in fields:
-        fields.remove('timeStamp')
 
     transformaton = {
         "id": "groupBy",
@@ -95,6 +94,13 @@ def group_by_bar_chart(
             "aggregations": ["lastNotNull"],
             "operation": "aggregate",
         }
+    transformaton["options"]["fields"]["timeStamp"] = {
+        "aggregations": [],
+        "operation": None,
+    }
+
+    return transformaton
+
 
 def concat_fields(alias: str, fields: list[str]) -> dict:
     """Concatenate all unique values from `fields` into a single field and rename it to `alias`
@@ -197,7 +203,5 @@ def merge() -> dict:
     Returns:
         transformation dict
     """
-    return {
-        "id": "merge",
-        "options": {}
-    }
+    return {"id": "merge", "options": {}}
+

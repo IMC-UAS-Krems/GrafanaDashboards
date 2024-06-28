@@ -15,10 +15,10 @@ from grafana_dashboards.trasformations import (
     concat_fields,
     filter_by_value,
     group_by,
+    group_by_bar_chart,
     organize,
     merge,
     group_by_geomap,
-    group_by_bar_chart,
 )
 from grafana_dashboards.model import (
     BarChart,
@@ -115,7 +115,8 @@ def generate_target_dataskop(
     with_time: bool = True,
     geomap: bool = False,
     special_value: bool = False,
-    bar: bool = False
+    bar: bool = False,
+    is_fhstp: bool = True,
 ) -> dict:
     """This function generates the target for multiple smartcomm panels.
     Each target is a group of queries for a specific location and a specific field.
@@ -138,19 +139,32 @@ def generate_target_dataskop(
 
     # because the label of the target is location-attribute we need to connect them
     # in the new version we have pannels which expect dash but others expect underscore
-    ref_id = (
-        location + "_" + attributes[index_field]
-        if location
-        else attributes[index_field]
-    )
+    if is_fhstp:
+        ref_id = (
+            location + "_" + attributes[index_field]
+            if location
+            else attributes[index_field]
+        )
+    else:
+        ref_id = field_name
 
     if special_value:
         fields.append(
-            generate_special_value_field_for_dataskope(field_name, types_resolver, data_source, attributes[index_field])
+            generate_special_value_field_for_dataskope(
+                field_name,
+                types_resolver,
+                data_source,
+                attributes[index_field] if is_fhstp else field_name,
+            )
         )
         if bar:
             fields.append(
-                bar_field(field_name, types_resolver, data_source, attributes[index_field])
+                bar_field(
+                    field_name,
+                    types_resolver,
+                    data_source,
+                    attributes[index_field] if is_fhstp else field_name,
+                )
             )
     else:
         fields.append(
@@ -174,6 +188,7 @@ def generate_target_dataskop(
         )
     )
 
+
 def generate_special_value_field_for_dataskope(
     field_name: str,
     types_resolver: TypesResolver,
@@ -195,9 +210,10 @@ def generate_special_value_field_for_dataskope(
         )
     )
 
+
 def bar_field(
-    field_name: str, 
-    types_resolver: TypesResolver, 
+    field_name: str,
+    types_resolver: TypesResolver,
     data_source: Datasource,
     value_name: str,
 ) -> dict:
@@ -442,12 +458,14 @@ def generate_bar_chart_dataskop(
                 panel_type=config.type,
                 hide=False,
                 special_value=True,
-                bar = True
+                bar=True,
+                is_fhstp=False,
             )
         )
 
     transformations.append(merge())
-    transformations.append(group_by("Fields", config.traces))
+    # transformations.append(group_by("Fields", config.traces))
+    transformations.append(group_by_bar_chart("Fields", config.traces))
 
     return json.loads(
         template.render(
@@ -568,6 +586,7 @@ def generate_pie_chart_dataskop(
                 data_source=data_source,
                 panel_type=config.type,
                 hide=False,
+                is_fhstp=False,
             )
         )
 
@@ -599,6 +618,7 @@ def generate_pie_chart(
             id, config, type_resolver, data_source, title
         )
 
+
 def generate_xy_chart_dataskop(
     id: int,
     config: XYChart,
@@ -620,6 +640,7 @@ def generate_xy_chart_dataskop(
                 panel_type=config.type,
                 hide=False,
                 special_value=True,
+                is_fhstp=False,
             )
         )
 
@@ -637,6 +658,7 @@ def generate_xy_chart_dataskop(
             datasource_uid=data_source.uid,
         )
     )
+
 
 def generate_xy_chart_fireware(
     id: int,
@@ -676,6 +698,7 @@ def generate_xy_chart_fireware(
             transformations=transformations,
         )
     )
+
 
 def generate_xy_chart(
     id: int,
@@ -763,6 +786,7 @@ def generate_time_series_dataskop(
                 data_source=data_source,
                 panel_type=config.type,
                 hide=False,
+                is_fhstp=False,
             )
         )
 
@@ -795,7 +819,8 @@ def generate_time_series(
         return generate_time_series_dataskop(
             id, config, type_resolver, data_source, title
         )
-    
+
+
 def generate_geomap_dataskop(
     id: int,
     config: GeoMap,
@@ -818,6 +843,7 @@ def generate_geomap_dataskop(
                 hide=False,
                 geomap=True,
                 special_value=True,
+                is_fhstp=False,
             )
         )
 
@@ -835,6 +861,7 @@ def generate_geomap_dataskop(
             datasource_uid=data_source.uid,
         )
     )
+
 
 def generate_geomap_fiware(
     id: int,
@@ -908,7 +935,9 @@ def generate_geomap_fiware(
         )
     )
 
-def generate_geomap(id: int,
+
+def generate_geomap(
+    id: int,
     config: GeoMap,
     type_resolver: TypesResolver,
     data_source: Datasource,
@@ -1024,6 +1053,7 @@ def generate_single_line_dataskop(
                 data_source=data_source,
                 panel_type=config.type,
                 hide=False,
+                is_fhstp=False,
             )
         )
 
