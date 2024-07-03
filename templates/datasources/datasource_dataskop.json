@@ -4,7 +4,7 @@
   "type": "marcusolsson-json-datasource",
   "url": {{ url | jsonify }},
   "jsonData": {
-    "httpHeaderName1": 'Authorization'
+    "httpHeaderName1": "Authorization"
   },
   "secureJsonData": {
     "httpHeaderValue1": {{ token | jsonify }}
