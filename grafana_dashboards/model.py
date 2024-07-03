@@ -45,7 +45,7 @@ class Datasource(BaseModel):
         self.uid = self.generate_uid()
 
     def generate_uid(self):
-        return "vS7bVH14k"
+        # return "vS7bVH14k"
         return (
             base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
         )
