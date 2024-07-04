@@ -410,14 +410,13 @@ def generate_bar_chart_fiware(
 
     return json.loads(
         template.render(
+            datasource_uid=data_source.uid,
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
             xField=config.traces[0],
+            targets=targets,
             transformations=transformations,
             title=title,
-            targets=targets,
-            datasource_uid=data_source.uid,
-            measurement_id=data_source.config.measurements[config.traces[0]],
         )
     )
 
@@ -541,15 +540,13 @@ def generate_pie_chart_fiware(
 
     return json.loads(
         template.render(
+            datasource_uid=data_source.uid,
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
             pie_chart_type=config.pie_chart_type,
-            fields=fields,
-            type=data_source.query,
+            targets=targets,
             title=title,
             transformations=transformations,
-            targets=targets,
-            measurement_id=data_source.config.measurements[config.traces[0]],
         )
     )
 
@@ -599,7 +596,6 @@ def generate_pie_chart_dataskop(
             title=title,
             transformations=transformations,
             targets=targets,
-            measurement_id=data_source.config.measurements[config.traces[0]],
             datasource_uid=data_source.uid,
         )
     )
@@ -681,6 +677,7 @@ def generate_xy_chart_fireware(
         dict: The fields of the panel as it is in xy.json
     """
     template = env.get_template("xy.json")
+    fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
 
@@ -688,15 +685,25 @@ def generate_xy_chart_fireware(
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
 
+    fiware_template = json.loads(
+        fiware_template.render(
+            datasource_uid=data_source.uid,
+            fields=fields,
+            type=data_source.query,
+            hide=False,
+            ref_id="A",
+        )
+    )
+
     transformations.append(filter_by_value("$id_filter", "id"))
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id, config.type),
             id=id,
-            fields=fields,
-            type=data_source.query,
+            targets=[fiware_template],
             title=title,
             transformations=transformations,
+            datasource_uid=data_source.uid,
         )
     )
 
@@ -734,6 +741,7 @@ def generate_time_series_fiware(
         dict: The fields of the panel as it is in timeseries.json
     """
     template = env.get_template("timeseries.json")
+    fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
 
@@ -743,12 +751,22 @@ def generate_time_series_fiware(
 
     transformations.append(filter_by_value("$id_filter", "id"))
 
-    return json.loads(
-        template.render(
-            grid_pos=generate_grid_pos(id, config.type),
-            id=id,
+    fiware_template = json.loads(
+        fiware_template.render(
+            datasource_uid=data_source.uid,
             fields=fields,
             type=data_source.query,
+            hide=False,
+            ref_id="A",
+        )
+    )
+
+    return json.loads(
+        template.render(
+            datasource_uid=data_source.uid,
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=[fiware_template],
             title=title,
             transformations=transformations,
         )
@@ -889,6 +907,7 @@ def generate_geomap_fiware(
         dict: The fields of the panel as it is in geomap.json
     """
     template = env.get_template("geomap.json")
+    fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
     extra_data = []
@@ -924,14 +943,23 @@ def generate_geomap_fiware(
         )
     )
 
-    return json.loads(
-        template.render(
-            grid_pos=generate_grid_pos(id, config.type),
-            id=id,
-            layerName=data_source.query,
-            transformations=transformations,
+    fiware_template = json.loads(
+        fiware_template.render(
+            datasource_uid=data_source.uid,
             fields=fields,
             type=data_source.query,
+            hide=False,
+            ref_id="A",
+        )
+    )
+
+    return json.loads(
+        template.render(
+            datasource_uid=data_source.uid,
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=[fiware_template],
+            transformations=transformations,
             title=title,
         )
     )
@@ -1444,6 +1472,7 @@ def generate_fhstp_map(
                 )
             )
         else:
+            raise Exception("Only Dataskop is supported for this panel")
             targets.append(
                 generate_target(
                     location,
@@ -1466,6 +1495,7 @@ def generate_fhstp_map(
             datasource_uid=data_source.uid,
         )
     )
+
 
 def generate_bars_and_bubbles(
     id: int,
