@@ -23,6 +23,7 @@ from grafana_dashboards.panel_gen import (
     generate_extreme_values,
     generate_bullet_graph,
     generate_fhstp_map,
+    generate_bars_and_bubbles,
 )
 
 from grafana_dashboards.model import Config
