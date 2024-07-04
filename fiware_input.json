@@ -1,0 +1,178 @@
+{
+  "service": {
+    "title": "Grafana dashboard",
+    "scope": "environment",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "data": {
+    "sources": {
+      "first": {
+        "provider": "Fiware",
+        "uri": "https://data.iiss.at/dataskop/fiwarenosec/v2/entities",
+        "query": "AirQualityObserved",
+        "type": "SmartMeter",
+        "config": {
+          "company": 23,
+          "measurements": {
+            "temperature": 450,
+            "humidity": 330
+          },
+          "token": "1234567890"
+        }
+      }
+    }
+  },
+  "application": {
+    "type": "Web",
+    "layout": "SinglePage",
+    "roles": [
+      "User",
+      "SuperUser",
+      "Admin"
+    ],
+    "panels": {
+      "Calendar": {
+        "type": "smartcomm-calendar-panel",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "CO",
+          "NO",
+          "NOx",
+          "O3"
+        ],
+        "locations": [
+          "Escuelas Aguirre",
+          "Arturo Soria",
+          "Villaverde"
+        ]
+      },
+      "TS": {
+        "type": "timeseries",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx",
+          "O3",
+          "NO2",
+          "SO2",
+          "id"
+        ]
+      },
+      "BnB": {
+        "type": "smartcomm-minmaxbarchart-panel",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx",
+          "O3",
+          "NO2"
+        ],
+        "locations": [
+          "Escuelas Aguirre",
+          "Arturo Soria",
+          "Villaverde"
+        ]
+      },
+      "ExtremeValues": {
+        "type": "smartcomm-extremevalues-panel",
+        "source": "first",
+        "traces": [
+          "NOx",
+          "O3",
+          "NO2",
+          "SO2"
+        ],
+        "locations": [
+          "Escuelas Aguirre",
+          "Arturo Soria",
+          "Villaverde"
+        ]
+      },
+      "Pie": {
+        "type": "pie_chart",
+        "source": "first",
+        "traces": [
+          "NOx",
+          "O3",
+          "NO2",
+          "SO2",
+          "id"
+        ],
+        "pie_chart_type": "pie"
+      },
+      "SingleLine": {
+        "type": "smartcomm-simpleline-panel",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx"
+        ]
+      },
+      "MultiLine": {
+        "type": "smartcomm-multiplelinechart-panel",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx",
+          "O3",
+          "NO2"
+        ],
+        "locations": [
+          "Escuelas Aguirre",
+          "Arturo Soria",
+          "Villaverde"
+        ]
+      },
+      "XY": {
+        "type": "xy_chart",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx",
+          "O3",
+          "NO2",
+          "SO2",
+          "id"
+        ]
+      },
+      "Map": {
+        "type": "geomap",
+        "source": "first",
+        "data": [
+          "location",
+          "stationName",
+          "O3",
+          "NO2",
+          "SO2",
+          "address"
+        ]
+      },
+      "Bar": {
+        "type": "bar_chart",
+        "source": "first",
+        "traces": [
+          "dateObserved",
+          "NOx",
+          "O3",
+          "NO2",
+          "SO2",
+          "id"
+        ]
+      }
+    }
+  },
+  "deployment": {
+    "environments": {
+      "local": {
+        "uri": "https://localhost.org:3000/test",
+        "port": 50055,
+        "type": "Docker"
+      }
+    }
+  }
+}

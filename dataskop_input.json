@@ -1,0 +1,181 @@
+{
+  "service": {
+    "title": "Grafana dashboard",
+    "scope": "environment",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "data": {
+    "sources": {
+      "first": {
+        "provider": "Dataskop",
+        "uri": "https://backend.dataskop.at/",
+        "query": "AirQualityObserved",
+        "type": "SmartMeter",
+        "config": {
+          "company": 23,
+          "measurements": {
+            "Würnsdorf": 41,
+            "Fadenbach_Luftfeuchtigkeit": 1501,
+            "Zelking": 42,
+            "Würnsdorf_Temperatur": 1491,
+            "Fadenbach": 43,
+            "Fadenbach_Temperatur": 1502,
+            "Würnsdorf_Luftfeuchtigkeit": 1492,
+            "Fadenbach_Feinstaub": 1499,
+            "Würnsdorf_Feinstaub": 1489,
+            "Leobersdorf": 45,
+            "Würnsdorf_Luftdruck": 1493,
+            "Retz": 40,
+            "Fadenbach_Luftdruck": 1503
+          },
+          "token": "0309f94e6e214fc3bfa32142c89af3f90d4f5172f5674c7a8099dd4d75618929"
+        }
+      }
+    }
+  },
+  "application": {
+    "type": "Web",
+    "layout": "SinglePage",
+    "roles": [
+      "User",
+      "SuperUser",
+      "Admin"
+    ],
+    "panels": {
+      "Bar": {
+        "type": "bar_chart",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ]
+      },
+      "Map": {
+        "type": "geomap",
+        "source": "first",
+        "data": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ]
+      },
+      "MultiLine": {
+        "type": "smartcomm-multiplelinechart-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ],
+        "locations": [
+          "Wünsdort",
+          "Fadenbach"
+        ]
+      },
+      "XY": {
+        "type": "xy_chart",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit"
+        ]
+      },
+      "Pie": {
+        "type": "pie_chart",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ],
+        "pie_chart_type": "pie"
+      },
+      "MapFHSP": {
+        "type": "smartcomm-map-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf",
+          "Fadenbach"
+        ]
+      },
+      "SingleLine": {
+        "type": "smartcomm-simpleline-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ]
+      },
+      "Calendar": {
+        "type": "smartcomm-calendar-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ],
+        "locations": [
+          "Wünsdort",
+          "Fadenbach"
+        ]
+      },
+      "TS": {
+        "type": "timeseries",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur"
+        ]
+      },
+      "Bullet": {
+        "type": "smartcomm-bulletgraph-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ],
+        "locations": [
+          "Wünsdort",
+          "Fadenbach"
+        ]
+      },
+      "BnB": {
+        "type": "smartcomm-minmaxbarchart-panel",
+        "source": "first",
+        "traces": [
+          "Würnsdorf_Temperatur",
+          "Fadenbach_Temperatur",
+          "Würnsdorf_Luftfeuchtigkeit",
+          "Fadenbach_Luftfeuchtigkeit"
+        ],
+        "locations": [
+          "Wünsdort",
+          "Fadenbach"
+        ]
+      }
+    }
+  },
+  "deployment": {
+    "environments": {
+      "local": {
+        "uri": "https://localhost.org:3000/test",
+        "port": 50055,
+        "type": "Docker"
+      }
+    }
+  }
+}
