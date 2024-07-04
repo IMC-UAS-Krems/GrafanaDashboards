@@ -62,6 +62,7 @@ panel_mapping: dict[str, Callable] = {
     "smartcomm-extremevalues-panel": generate_extreme_values,
     "smartcomm-bulletgraph-panel": generate_bullet_graph,
     "smartcomm-map-panel": generate_fhstp_map,
+    "smartcomm-bars-and-bubbles": generate_bars_and_bubbles,
 }
 
 

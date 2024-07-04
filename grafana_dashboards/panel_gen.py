@@ -22,6 +22,7 @@ from grafana_dashboards.trasformations import (
 )
 from grafana_dashboards.model import (
     BarChart,
+    BarsBubbles,
     BulletGraph,
     DataSourceProvider,
     Datasource,
@@ -1454,6 +1455,80 @@ def generate_fhstp_map(
                     hide=False,
                 )
             )
+
+    return json.loads(
+        template.render(
+            grid_pos=generate_grid_pos(id, config.type),
+            id=id,
+            targets=targets,
+            type=data_source.query,
+            title=title,
+            datasource_uid=data_source.uid,
+        )
+    )
+
+def generate_bars_and_bubbles(
+    id: int,
+    config: BarsBubbles,
+    type_resolver: TypesResolver,
+    data_source: Datasource,
+    title: str,
+) -> dict:
+    """This function generates the bullet graph panel.
+    Each group of queries location-element is a target.
+    This is created by target function.
+    Bullet graph pannel has a bug
+    The panel does not work with more than 11 groups
+    That is why we hide one target
+    There is also a max of 3 locations and 4 elements that can be displayed
+
+    Args:
+        id (int): id of the panel
+        config (BulletGraph): definition of the panel
+        type_resolver (TypesResolver): resolver for the types
+        data_source (Datasource): source of the data
+        title (str): title of the panel
+
+    Returns:
+        dict: The fields of the panel as it is in bulletpanel.json
+    """
+    template = env.get_template("bulletpanel.json")
+    targets = []
+
+    locations = config.locations
+    if "dateObserved" in config.traces:
+        config.traces.remove("dateObserved")
+    elements = config.traces
+
+    for location in locations:
+        for element in elements:
+            index_field = elements.index(element)
+            hide = elements.index(element) == 0 and locations.index(location) == 0
+
+            if data_source.provider == DataSourceProvider.Dataskop:
+                targets.append(
+                    generate_target_dataskop(
+                        element,
+                        index_field,
+                        type_resolver,
+                        data_source,
+                        config.type,
+                        hide=hide,
+                        location=location,
+                    )
+                )
+            else:
+                targets.append(
+                    generate_target(
+                        location,
+                        element,
+                        index_field,
+                        type_resolver,
+                        data_source,
+                        config.type,
+                        hide=hide,
+                    )
+                )
 
     return json.loads(
         template.render(

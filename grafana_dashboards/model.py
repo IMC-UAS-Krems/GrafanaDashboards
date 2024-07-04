@@ -116,6 +116,12 @@ class BulletGraph(BaseModel):
     locations: list[str]
     traces: list[str]
 
+class BarsBubbles(BaseModel):
+    type: Literal["smartcomm-bars-and-bubbles"]
+    source: str
+    locations: list[str]
+    traces: list[str]
+
 
 class MapFHSTP(BaseModel):
     type: Literal["smartcomm-map-panel"]
