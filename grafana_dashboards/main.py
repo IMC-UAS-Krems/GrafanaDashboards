@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from grafana_dashboards.datasource_gen import generate_datasources
-from grafana_dashboards.var_templating import create_template_variable
+from grafana_dashboards.var_templating import create_template_variable, generate_templating_variables
 from grafana_dashboards.panel_gen import (
     generate_bar_chart,
     generate_xy_chart,
@@ -81,8 +81,6 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
-    datasources = []
-    templates = []
 
     try:
         config_panels = config.application.panels
@@ -104,12 +102,7 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
         )
 
     title = config.service.title
-    templates.append(
-        create_template_variable(
-            "id_filter",
-            '$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,"")',
-        )
-    )
+    templates = generate_templating_variables(config.data.sources)
 
     datasources = generate_datasources(config.data.sources)
 

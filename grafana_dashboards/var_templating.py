@@ -1,3 +1,6 @@
+from grafana_dashboards.model import Datasource, DataSourceProvider
+
+
 def create_template_variable(variable_name: str, query: str) -> dict:
     """Creates a template variable for the dashboard.
 
@@ -35,3 +38,13 @@ def create_template_variable(variable_name: str, query: str) -> dict:
         "sort": 0,
         "type": "query",
     }
+
+def generate_templating_variables(sources: dict[str, Datasource]) -> list[dict]:
+    templates = []
+    for source in sources.values():
+        if source.provider == DataSourceProvider.Fiware:
+            templates.append(create_template_variable(
+                "id_filter",
+                '$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,"")',
+            ))
+    return templates
