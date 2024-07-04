@@ -1492,7 +1492,7 @@ def generate_bars_and_bubbles(
     Returns:
         dict: The fields of the panel as it is in bulletpanel.json
     """
-    template = env.get_template("bulletpanel.json")
+    template = env.get_template("bars_bubbles.json")
     targets = []
 
     locations = config.locations

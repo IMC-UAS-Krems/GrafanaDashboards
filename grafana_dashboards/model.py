@@ -117,7 +117,7 @@ class BulletGraph(BaseModel):
     traces: list[str]
 
 class BarsBubbles(BaseModel):
-    type: Literal["smartcomm-bars-and-bubbles"]
+    type: Literal["smartcomm-minmaxbarchart-panel"]
     source: str
     locations: list[str]
     traces: list[str]
