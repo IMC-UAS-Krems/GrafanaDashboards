@@ -1,7 +1,7 @@
 from grafana_dashboards.model import Datasource, DataSourceProvider
 
 
-def create_template_variable(variable_name: str, query: str) -> dict:
+def create_template_variable(variable_name: str, query: str, uid: str) -> dict:
     """Creates a template variable for the dashboard.
 
     Args:
@@ -12,7 +12,7 @@ def create_template_variable(variable_name: str, query: str) -> dict:
         template as a dictionary
     """
     return {
-        "datasource": {"type": "marcusolsson-json-datasource", "uid": "2RGTUW4Sk"},
+        "datasource": {"type": "marcusolsson-json-datasource", "uid": uid},
         "definition": "",
         "hide": 0,
         "includeAll": False,
@@ -45,6 +45,6 @@ def generate_templating_variables(sources: dict[str, Datasource]) -> list[dict]:
         if source.provider == DataSourceProvider.Fiware:
             templates.append(create_template_variable(
                 "id_filter",
-                '$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,"")',
+                '$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,"")', source.uid
             ))
     return templates
