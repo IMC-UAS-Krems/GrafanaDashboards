@@ -9,5 +9,5 @@
     "method": "GET",
     "queryParams": "",
     "refId": {{ ref_id | jsonify }},
-    "urlPath": "/api/measurementresult/query/advanced/{{measurement_id}}/50/0?orderby=timestamp%20desc"
+    "urlPath": "/api/measurementresult/query/advanced/{{measurement_id}}/1000/0?orderby=timestamp%20desc"
 }
