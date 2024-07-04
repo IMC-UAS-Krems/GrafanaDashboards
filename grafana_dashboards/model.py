@@ -141,6 +141,7 @@ Panel: TypeAlias = (
     | ExtremeValues
     | BulletGraph
     | MapFHSTP
+    | BarsBubbles
 )
 
 
