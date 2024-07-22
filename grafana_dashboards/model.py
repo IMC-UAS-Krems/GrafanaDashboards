@@ -37,7 +37,7 @@ class Datasource(BaseModel):
     provider: DataSourceProvider
     type: str  # ignore
     uri: str
-    query: str
+    query: str | None = None
     config: DataSourceConfig
     uid: str | None = None
 
