@@ -189,6 +189,54 @@ def generate_target_dataskop(
         )
     )
 
+def generate_target_dataskop_singleline(
+    field_name: str,  # example: "O3"
+    index_field: int,  # between 0 and 3
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+    panel_type: str,
+    hide: bool = False,
+) -> dict:
+    """
+
+    This function generates the target for multiple smartcomm panels.
+    Each target is a group of queries for a specific location and a specific field.
+    Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
+    Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
+
+    Args:
+        location (str): The station name
+        field_name (str): The field name that we want to query
+        index_field (int): The index of the field, needed for extreme values panel
+        data_source (Datasource): Used to generate the field and the type of the query
+        hide (bool, optional): It is used as a fix for the bullet graph panel. Defaults to False.
+
+    Returns:
+        dict: The fields of the panel as it is in target.json
+    """
+    attributes = ["Temperatur", "Luftfeuchtigkeit", "Feinstaub", "Luftdruck"]
+    dataskop = env.get_template("dataskop.json")
+    fields = []
+
+    # because the label of the target is location-attribute we need to connect them
+    # in the new version we have pannels which expect dash but others expect underscore
+    ref_id = field_name
+
+    fields.append(generate_time_field_for_dataskope())
+    fields.append(
+        generate_value_field_for_dataskope(field_name, types_resolver, data_source)
+    )
+
+
+    return json.loads(
+        dataskop.render(
+            datasource_uid=data_source.uid,
+            fields=fields,
+            hide=hide,
+            ref_id=ref_id,
+            measurement_id=data_source.config.measurements[field_name],
+        )
+    )
 
 def generate_special_value_field_for_dataskope(
     field_name: str,
@@ -1075,14 +1123,13 @@ def generate_single_line_dataskop(
 
     for i, field_name in enumerate(config.traces):
         targets.append(
-            generate_target_dataskop(
+            generate_target_dataskop_singleline(
                 field_name,
                 index_field=i,
                 types_resolver=type_resolver,
                 data_source=data_source,
                 panel_type=config.type,
                 hide=False,
-                is_fhstp=False,
             )
         )
 
