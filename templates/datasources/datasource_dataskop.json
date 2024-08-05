@@ -1,0 +1,12 @@
+{
+  "name": {{ name | jsonify }},
+  "uid": {{ uid | jsonify }},
+  "type": "marcusolsson-json-datasource",
+  "url": {{ url | jsonify }},
+  "jsonData": {
+    "httpHeaderName1": "Authorization"
+  },
+  "secureJsonData": {
+    "httpHeaderValue1": {{ token | jsonify }}
+  }
+}

@@ -1,4 +1,7 @@
+from enum import Enum
 from typing import Annotated, Literal, TypeAlias
+import base64
+import secrets
 
 from pydantic import BaseModel, Field
 
@@ -19,11 +22,33 @@ class Query(BaseModel):
     type: str
 
 
+class DataSourceConfig(BaseModel):
+    company: int
+    measurements: dict[str, int]
+    token: str
+
+
+class DataSourceProvider(str, Enum):
+    Dataskop = "Dataskop"
+    Fiware = "Fiware"
+
+
 class Datasource(BaseModel):
-    provider: str  # Fiware
+    provider: DataSourceProvider
     type: str  # ignore
     uri: str
-    query: str
+    query: str | None = None
+    config: DataSourceConfig
+    uid: str | None = None
+
+    def model_post_init(self, __context):
+        self.uid = self.generate_uid()
+
+    def generate_uid(self):
+        # return "vS7bVH14k"
+        return (
+            base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
+        )
 
 
 class GeoMap(BaseModel):
@@ -61,14 +86,14 @@ class XYChart(BaseModel):
 class SingleLine(BaseModel):
     type: Literal["smartcomm-simpleline-panel"]
     source: str
-    traces: list[str] 
+    traces: list[str]
 
 
 class Calendar(BaseModel):
     type: Literal["smartcomm-calendar-panel"]
     source: str
     locations: list[str]
-    traces: list[str]  
+    traces: list[str]
 
 
 class MultiLine(BaseModel):
@@ -82,7 +107,8 @@ class ExtremeValues(BaseModel):
     type: Literal["smartcomm-extremevalues-panel"]
     source: str
     locations: list[str]
-    traces: list[str]  
+    traces: list[str]
+
 
 class BulletGraph(BaseModel):
     type: Literal["smartcomm-bulletgraph-panel"]
@@ -90,8 +116,33 @@ class BulletGraph(BaseModel):
     locations: list[str]
     traces: list[str]
 
+class BarsBubbles(BaseModel):
+    type: Literal["smartcomm-minmaxbarchart-panel"]
+    source: str
+    locations: list[str]
+    traces: list[str]
 
-Panel: TypeAlias = PieChart | TimeSeries | BarChart | GeoMap | XYChart | SingleLine | Calendar | MultiLine | ExtremeValues | BulletGraph
+
+class MapFHSTP(BaseModel):
+    type: Literal["smartcomm-map-panel"]
+    source: str
+    traces: list[str]
+
+
+Panel: TypeAlias = (
+    PieChart
+    | TimeSeries
+    | BarChart
+    | GeoMap
+    | XYChart
+    | SingleLine
+    | Calendar
+    | MultiLine
+    | ExtremeValues
+    | BulletGraph
+    | MapFHSTP
+    | BarsBubbles
+)
 
 
 class Application(BaseModel):

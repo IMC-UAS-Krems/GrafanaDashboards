@@ -1,98 +1,89 @@
 {
-    "datasource": {
-      "type": "marcusolsson-json-datasource", 
-      "uid": "2RGTUW4Sk"
-    },
-    "fieldConfig": {
-      "defaults": {
-        "color": {
-          "mode": "palette-classic"
+  "datasource": {
+    "type": "marcusolsson-json-datasource",
+    "uid": {{ datasource_uid | jsonify }}
+  },
+  "fieldConfig": {
+    "defaults": {
+      "color": {
+        "fixedColor": "green",
+        "mode": "fixed"
+      },
+      "custom": {
+        "axisBorderShow": false,
+        "axisCenteredZero": false,
+        "axisColorMode": "text",
+        "axisLabel": "",
+        "axisPlacement": "auto",
+        "fillOpacity": 80,
+        "gradientMode": "none",
+        "hideFrom": {
+          "legend": false,
+          "tooltip": false,
+          "viz": false
         },
-        "custom": {
-          "axisCenteredZero": "false",
-          "axisColorMode": "text",
-          "axisLabel": "",
-          "axisPlacement": "auto",
-          "fillOpacity": 80,
-          "gradientMode": "none",
-          "hideFrom": {
-            "legend": false,
-            "tooltip": false,
-            "viz": false
-          },
-          "lineWidth": 1,
-          "scaleDistribution": {
-            "type": "linear"
-          },
-          "thresholdsStyle": {
-            "mode": "off"
-          }
+        "lineWidth": 1,
+        "scaleDistribution": {
+          "type": "linear"
         },
-        "mappings": [],
-        "thresholds": {
-          "mode": "absolute",
-          "steps": [
-            {
-              "color": "green"
-            },
-            {
-              "color": "red",
-              "value": 80
-            }
-          ]
+        "thresholdsStyle": {
+          "mode": "off"
         }
       },
-      "overrides": []
-    },
-    "gridPos": {{ grid_pos | jsonify }},
-    "id": {{ id | jsonify }},
-    "options": {
-      "barRadius": 0,
-      "barWidth": 0.97,
-      "groupWidth": 0.7,
-      "legend": {
-        "calcs": [],
-        "displayMode": "list",
-        "placement": "bottom",
-        "showLegend": "true"
-      },
-      "orientation": "auto", 
-      "showValue": "auto",
-      "stacking": "none",
-      "tooltip": {
-        "mode": "single",
-        "sort": "none"
-      },
-      "xField": {{xField | jsonify }},
-      "xTickLabelRotation": 90,
-      "xTickLabelSpacing": 0
-    },
-    "targets": [
-      {
-        "cacheDurationSeconds": 300,
-        "datasource": {
-          "type": "marcusolsson-json-datasource",
-          "uid": "2RGTUW4Sk"
-        },
-        "fields": {{ fields | jsonify }},
-        "method": "GET",
-        "params": [
-          [
-            "limit",
-            "1000"
-          ],
-          [
-            "type",
-            {{type | jsonify}}
-          ]
-        ],
-        "queryParams": "",
-        "refId": "A",
-        "urlPath": ""
+      "mappings": [
+        {
+          "options": {
+            "Luftfeuchtigkeit": {
+              "color": "orange",
+              "index": 1
+            },
+            "Temperatur": {
+              "color": "yellow",
+              "index": 0
+            }
+          },
+          "type": "value"
+        }
+      ],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          }
+        ]
       }
-    ],
-    "title": {{ title | jsonify }},
-    "transformations": {{ transformations | jsonify }},
-    "transparent": false,
-    "type": "barchart"
+    },
+    "overrides": []
+  },
+  "gridPos": {{ grid_pos | jsonify }},
+  "id": {{id | jsonify }},
+  "options": {
+    "barRadius": 0,
+    "barWidth": 0.97,
+    "fullHighlight": false,
+    "groupWidth": 0.7,
+    "legend": {
+      "calcs": [],
+      "displayMode": "list",
+      "placement": "bottom",
+      "showLegend": true
+    },
+    "orientation": "auto",
+    "showValue": "auto",
+    "stacking": "normal",
+    "tooltip": {
+      "mode": "multi",
+      "sort": "none"
+    },
+    "xField": {{xField | jsonify }},
+    "xTickLabelRotation": 0,
+    "xTickLabelSpacing": 0
+  },
+  "pluginVersion": "10.2.2",
+  "targets": {{targets | jsonify}},
+  "title": {{title | jsonify}},
+  "transformations": {{transformations | jsonify}},
+  "type": "barchart"
 }

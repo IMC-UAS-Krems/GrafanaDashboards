@@ -39,7 +39,14 @@ class TypesResolver:
             "AirQualityObserved": "https://raw.githubusercontent.com/smart-data-models/dataModel.Environment/master/AirQualityObserved/schema.json",
             "PointOfInterest": "https://raw.githubusercontent.com/smart-data-models/dataModel.PointOfInterest/master/PointOfInterest/schema.json",
         }
-        self._logger.setLevel(logging.INFO)
+        self.dataskop_cache = {}
+        self._logger.setLevel(logging.DEBUG)
+        self.dataskop_types: dict[int, Type] = {
+            1: "string",
+            2: "number",
+            3: "time",
+            4: "boolean",
+        }
 
     def resolve(
         self, model_type: str, path_to_resolve: str, data_source_url: str
@@ -91,11 +98,40 @@ class TypesResolver:
 
         return None
 
+    def resolve_dataskop(
+        self, base_url: str, token: str, measurement_id: int
+    ) -> Type | None:
+        if data_type := (
+            self.dataskop_cache.get(base_url)
+            and self.dataskop_cache[base_url].get(measurement_id)
+        ):
+            self._logger.debug(f"Dataskop cache hit for {base_url} {measurement_id}")
+            return self.dataskop_types[data_type]
+
+        response = requests.get(
+            f"{base_url}/api/measurementresult/query/{measurement_id}/1/0",
+            headers={"Authorization": token},
+        )
+        if not response.ok:
+            return None
+
+        data_type = response.json()["measurementResults"][0]["valueType"]
+        if base_url not in self.dataskop_cache:
+            self.dataskop_cache[base_url] = {}
+
+        self.dataskop_cache[base_url][measurement_id] = data_type
+
+        return self.dataskop_types[data_type]
+
     def _resolve_schema(
         self, url: str, path_to_resolve: str
     ) -> List | Keys | Type | None:
         """"""
         schema = self._get_schema(url)
+
+        if not schema:
+            return None
+
         to_return = None
 
         for p in path_to_resolve.split("."):
@@ -112,6 +148,9 @@ class TypesResolver:
         """"""
 
         data = self._get_data(url, model_type)
+        if not data:
+            return None
+
         to_return = None
 
         for p in path_to_resolve.split("."):
@@ -122,7 +161,7 @@ class TypesResolver:
 
         return to_return
 
-    def _get_schema(self, model_type: str) -> dict:
+    def _get_schema(self, model_type: str) -> dict | None:
         """"""
         for i, (t, schema) in enumerate(self._schema_cache):
             if t == model_type:
@@ -135,6 +174,9 @@ class TypesResolver:
         self._logger.debug(f"Schema cache miss for {model_type}")
 
         r = requests.get(self._urls[model_type])
+        if not r.ok:
+            return None
+
         schema = self._schema_deref.expand(r.text)["properties"]
 
         self._schema_cache.insert(0, (model_type, schema))
@@ -144,11 +186,14 @@ class TypesResolver:
 
         return schema
 
-    def _get_data(self, url: str, model_type: str) -> dict:
+    def _get_data(self, url: str, model_type: str) -> dict | None:
         """"""
 
         if self._data_cache[0] != type:
-            r = requests.get(url, params={"type": model_type, "limit": 1}).json()[0]
+            r = requests.get(url, params={"type": model_type, "limit": 1})
+            if not r.ok:
+                return None
+            r = r.json()[0]
             self._data_cache = (model_type, r)
 
         return self._data_cache[1]

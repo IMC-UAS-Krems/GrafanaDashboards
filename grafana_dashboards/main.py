@@ -9,8 +9,9 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from var_templating import create_template_variable
-from panel_gen import (
+from grafana_dashboards.datasource_gen import generate_datasources
+from grafana_dashboards.var_templating import create_template_variable, generate_templating_variables
+from grafana_dashboards.panel_gen import (
     generate_bar_chart,
     generate_xy_chart,
     generate_time_series,
@@ -21,18 +22,20 @@ from panel_gen import (
     generate_multiline,
     generate_extreme_values,
     generate_bullet_graph,
+    generate_fhstp_map,
+    generate_bars_and_bubbles,
 )
 
-from model import Config
-import logging_setup  # will be executed on import  # noqa: F401
-from types_resolver import TypesResolver
+from grafana_dashboards.model import Config
+from grafana_dashboards import logging_setup  # will be executed on import  # noqa: F401
+from grafana_dashboards.types_resolver import TypesResolver
 
 GrafanaModel: TypeAlias = dict
 
 app = FastAPI()
 logger = logging.getLogger("grafana_dashboards")
 type_resolver = TypesResolver()
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 env = Environment(
     loader=FileSystemLoader("templates"),
     autoescape=select_autoescape("json"),
@@ -59,6 +62,8 @@ panel_mapping: dict[str, Callable] = {
     "smartcomm-multiplelinechart-panel": generate_multiline,
     "smartcomm-extremevalues-panel": generate_extreme_values,
     "smartcomm-bulletgraph-panel": generate_bullet_graph,
+    "smartcomm-map-panel": generate_fhstp_map,
+    "smartcomm-minmaxbarchart-panel": generate_bars_and_bubbles,
 }
 
 
@@ -76,7 +81,6 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
-    templates = []
 
     try:
         config_panels = config.application.panels
@@ -98,14 +102,11 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
         )
 
     title = config.service.title
-    templates.append(
-        create_template_variable(
-            "id_filter",
-            '$[*].id.$replace(/-(?:\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}|latest)$/,"")',
-        )
-    )
+    templates = generate_templating_variables(config.data.sources)
 
-    return json.loads(
+    datasources = generate_datasources(config.data.sources)
+
+    dashboard = json.loads(
         template.render(
             id=1,
             panels=panels,
@@ -114,6 +115,8 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
             templating=templates,
         )
     )
+
+    return {"datasources": datasources, "dashboards": dashboard}
 
 
 @app.get("/")

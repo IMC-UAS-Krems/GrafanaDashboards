@@ -1,7 +1,7 @@
 {
     "datasource": {
         "type": "marcusolsson-json-datasource",
-        "uid": "2RGTUW4Sk"
+        "uid": {{ datasource_uid | jsonify }}
     },
     "gridPos": {{ grid_pos | jsonify }},
     "id": {{ id | jsonify }},

@@ -1,7 +1,7 @@
 {
     "datasource": {
       "type": "marcusolsson-json-datasource",
-      "uid": {{ datasource_uid | jsonify }}
+      "uid": {{datasource_uid | jsonify}}
     },
     "fieldConfig": {
       "defaults": {
@@ -15,14 +15,12 @@
             "viz": false
           }
         },
-        "fieldMinMax": true,
         "mappings": [],
         "thresholds": {
           "mode": "absolute",
           "steps": [
             {
-              "color": "green",
-              "value": null
+              "color": "green"
             },
             {
               "color": "red",
@@ -73,10 +71,7 @@
                 "fixed": "img/icons/marker/circle.svg",
                 "mode": "fixed"
               },
-              "symbolAlign": {
-                "horizontal": "center",
-                "vertical": "center"
-              },
+
               "textConfig": {
                 "fontSize": 12,
                 "offsetX": 0,
@@ -86,10 +81,6 @@
               }
             }
           },
-          "location": {
-            "mode": "auto"
-          },
-          "name": "Layer 1",
           "tooltip": true,
           "type": "markers"
         }
@@ -102,13 +93,13 @@
         "id": "fit",
         "lat": 0,
         "lon": 0,
-        "padding": 50,
+        "padding": 10,
         "zoom": 15
       }
     },
-    "pluginVersion": "10.2.2",
+    "pluginVersion": "9.3.6",
     "targets": {{targets | jsonify}},
     "title": {{title | jsonify}},
-    "transformations": {{transformations | jsonify}},
-    "type": "geomap"
+    "transparent": false,
+    "type": "smartcomm-map-panel"
   }
