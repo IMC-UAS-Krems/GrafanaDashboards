@@ -69,7 +69,7 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
-    datasource = config.data.sources[config.data.default_source]
+    # datasource = config.data.sources[config.data.default_source]
 
     try:
         config_panels = config.application.panels

@@ -15,7 +15,6 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .model import Datasource
 from .types_resolver import Keys, TypesResolver
-# from .panel_gen import generate_special_value_field_for_dataskope, bar_field
 
 
 env = Environment(

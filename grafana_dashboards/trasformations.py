@@ -1,5 +1,6 @@
 class TransformationBuilder:
-    def group_by(self, group_by: str, fields: list[str]) -> dict:
+    @staticmethod
+    def group_by(group_by: str, fields: list[str]) -> dict:
         """Group by `group_by` field and aggregate all other fields with `last` function
         `groupBy` transformation with `groupby` operation and `aggregations` set to `last` for all fields
 
@@ -34,8 +35,8 @@ class TransformationBuilder:
 
         return transformaton
 
-
-    def group_by_geomap(self, group_by: list[str], fields: list[str]) -> dict:
+    @staticmethod
+    def group_by_geomap(group_by: list[str], fields: list[str]) -> dict:
         """Group by function adapted for geomap. 
 
         Args:
@@ -73,8 +74,8 @@ class TransformationBuilder:
 
         return transformaton
 
-
-    def group_by_bar_chart(self,group_by: str, fields: list[str]) -> dict:
+    @staticmethod
+    def group_by_bar_chart(group_by: str, fields: list[str]) -> dict:
         """Group by function adapted for bar chart.
 
         Args:
@@ -111,8 +112,8 @@ class TransformationBuilder:
 
         return transformaton
 
-
-    def concat_fields(self, alias: str, fields: list[str]) -> dict:
+    @staticmethod
+    def concat_fields(alias: str, fields: list[str]) -> dict:
         """Concatenate all unique values from `fields` into a single field and rename it to `alias`
         Alias to `calculateField` transformation with mode `reduceRow` and reducer `uniqueValues`
 
@@ -136,8 +137,8 @@ class TransformationBuilder:
             },
         }
 
-
-    def organize(self, 
+    @staticmethod
+    def organize(
         exclude_by_name: list[str] = [],
         index_by_name: list[str] = [],
         rename_by_name: dict[str, str] = {},
@@ -168,8 +169,8 @@ class TransformationBuilder:
             },
         }
 
-
-    def filter_by_value(self,
+    @staticmethod
+    def filter_by_value(
         value: str,
         field_name: str,
         match_condition: str = "any",
@@ -200,8 +201,8 @@ class TransformationBuilder:
             },
         }
 
-
-    def merge(self) -> dict:
+    @staticmethod
+    def merge() -> dict:
         """Merge fields into a single field
 
         Args:

@@ -45,7 +45,7 @@ env = Environment(
 )
 env.filters["jsonify"] = json.dumps
 
-transformations_class = TransformationBuilder()
+# transformations_class = TransformationBuilder()
 
 class DataskopeBuilder:
     @staticmethod
@@ -75,8 +75,8 @@ class DataskopeBuilder:
                 )
             )
 
-        transformations.append(transformations_class.merge())
-        transformations.append(transformations_class.group_by_bar_chart("Fields", config.traces))
+        transformations.append(TransformationBuilder.merge())
+        transformations.append(TransformationBuilder.group_by_bar_chart("Fields", config.traces))
 
         return json.loads(
             template.render(
@@ -154,7 +154,7 @@ class DataskopeBuilder:
                 )
             )
 
-        transformations.append(transformations_class.merge())
+        transformations.append(TransformationBuilder.merge())
 
         return json.loads(
             template.render(
@@ -234,8 +234,8 @@ class DataskopeBuilder:
                 )
             )
 
-        transformations.append(transformations_class.merge())
-        transformations.append(transformations_class.group_by_geomap(["longitude", "latitude"], config.data))
+        transformations.append(TransformationBuilder.merge())
+        transformations.append(TransformationBuilder.group_by_geomap(["longitude", "latitude"], config.data))
 
         return json.loads(
             template.render(
@@ -306,16 +306,16 @@ class FirewareBuilder:
         for field_name in config.traces:
             generated_fields, group = generate_field(field_name, type_resolver, data_source)
             if group:
-                transformations.append(transformations_class.concat_fields(group[0], group[1:]))
-                transformations.append(transformations_class.organize(exclude_by_name=group[1:]))
+                transformations.append(TransformationBuilder.concat_fields(group[0], group[1:]))
+                transformations.append(TransformationBuilder.organize(exclude_by_name=group[1:]))
                 extra_data.extend(group[1:])
             fields.extend(generated_fields)
 
         config.traces.extend(extra_data)
 
-        transformations.append(transformations_class.group_by("id", config.traces))
+        transformations.append(TransformationBuilder.group_by("id", config.traces))
         transformations.append(
-            transformations_class.organize(
+            TransformationBuilder.organize(
                 rename_by_name={
                     f"{name} (last)": name for name in config.traces if name != "id"
                 },
@@ -484,8 +484,8 @@ class FirewareBuilder:
                 continue
             generated_fields, group = generate_field(field_name, type_resolver, data_source)
             if group:
-                transformations.append(transformations_class.concat_fields(group[0], group[1:]))
-                transformations.append(transformations_class.organize(exclude_by_name=group[1:]))
+                transformations.append(TransformationBuilder.concat_fields(group[0], group[1:]))
+                transformations.append(TransformationBuilder.organize(exclude_by_name=group[1:]))
                 extra_data.extend(group[1:])
             fields.extend(generated_fields)
 
@@ -498,9 +498,9 @@ class FirewareBuilder:
 
         config.data.extend(extra_data)
 
-        transformations.append(transformations_class.group_by("id", config.data))
+        transformations.append(TransformationBuilder.group_by("id", config.data))
         transformations.append(
-            transformations_class.organize(
+            TransformationBuilder.organize(
                 rename_by_name={
                     f"{name} (last)": name for name in config.data if name != "id"
                 },
@@ -550,9 +550,9 @@ class FirewareBuilder:
                 generated_fields, _ = generate_field(field_name, type_resolver, data_source)
                 fields.extend(generated_fields)
 
-        transformations.append(transformations_class.group_by("dateObserved", config.traces))
+        transformations.append(TransformationBuilder.group_by("dateObserved", config.traces))
         transformations.append(
-            transformations_class.organize(
+            TransformationBuilder.organize(
                 rename_by_name={
                     f"{name} (last)": name
                     for name in config.traces
