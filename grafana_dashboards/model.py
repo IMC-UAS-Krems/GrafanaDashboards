@@ -45,10 +45,13 @@ class Datasource(BaseModel):
         self.uid = self.generate_uid()
 
     def generate_uid(self):
-        # return "vS7bVH14k"
-        return (
-            base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
-        )
+        # return (
+        #     base64.urlsafe_b64encode(secrets.token_bytes(9)).decode("utf-8").rstrip("=")
+        # )
+        if self.provider == DataSourceProvider.Dataskop:
+            return "vS7bVH14k"
+        else:
+            return "b66da1e5-11fc-4567-a063-e2169c55c71d"
 
 
 class GeoMap(BaseModel):

@@ -1,207 +1,216 @@
-def group_by(
-    group_by: str,
-    fields: list[str],
-) -> dict:
-    """Group by `group_by` field and aggregate all other fields with `last` function
+class TransformationBuilder:
+    def group_by(self, group_by: str, fields: list[str]) -> dict:
+        """Group by `group_by` field and aggregate all other fields with `last` function
+        `groupBy` transformation with `groupby` operation and `aggregations` set to `last` for all fields
 
-    `groupBy` transformation with `groupby` operation and `aggregations` set to `last` for all fields
+        Args:
+            group_by: field to group by
+            fields: list of fields to aggregate
 
-    Args:
-        group_by: field to group by
-        fields: list of fields to aggregate
+        Returns:
+            transformation dict
+        """
 
-    Returns:
-        transformation dict
-    """
+        if group_by in fields:
+            fields.remove(group_by)
 
-    if group_by in fields:
-        fields.remove(group_by)
-
-    transformaton = {
-        "id": "groupBy",
-        "options": {
-            "fields": {
-                group_by: {
-                    "aggregations": [],
-                    "operation": "groupby",
+        transformaton = {
+            "id": "groupBy",
+            "options": {
+                "fields": {
+                    group_by: {
+                        "aggregations": [],
+                        "operation": "groupby",
+                    }
                 }
-            }
-        },
-    }
-
-    for field_name in fields:
-        transformaton["options"]["fields"][field_name] = {
-            "aggregations": ["last"],
-            "operation": "aggregate",
-        }
-
-    return transformaton
-
-
-def group_by_geomap(
-    group_by: list[str],
-    fields: list[str],
-) -> dict:
-    if group_by in fields:
-        fields.remove(group_by)
-
-    transformaton = {
-        "id": "groupBy",
-        "options": {
-            "fields": {
-                group_by[1]: {
-                    "aggregations": [],
-                    "operation": "groupby",
-                },
-                group_by[0]: {
-                    "aggregations": [],
-                    "operation": "groupby",
-                },
-            }
-        },
-    }
-
-    for field_name in fields:
-        transformaton["options"]["fields"][field_name] = {
-            "aggregations": ["last"],
-            "operation": "aggregate",
-        }
-
-    return transformaton
-
-
-def group_by_bar_chart(
-    group_by: str,
-    fields: list[str],
-) -> dict:
-    if group_by in fields:
-        fields.remove(group_by)
-
-    transformaton = {
-        "id": "groupBy",
-        "options": {
-            "fields": {
-                group_by: {
-                    "aggregations": [],
-                    "operation": "groupby",
-                }
-            }
-        },
-    }
-
-    for field_name in fields:
-        transformaton["options"]["fields"][field_name] = {
-            "aggregations": ["lastNotNull"],
-            "operation": "aggregate",
-        }
-    transformaton["options"]["fields"]["timeStamp"] = {
-        "aggregations": [],
-        "operation": None,
-    }
-
-    return transformaton
-
-
-def concat_fields(alias: str, fields: list[str]) -> dict:
-    """Concatenate all unique values from `fields` into a single field and rename it to `alias`
-
-    Alias to `calculateField` transformation with mode `reduceRow` and reducer `uniqueValues`
-
-    Args:
-        alias: how to name the new field
-        fields: list of fields to concatenate
-
-    Returns:
-        transformation dict
-    """
-    return {
-        "id": "calculateField",
-        "options": {
-            "mode": "reduceRow",
-            "reduce": {
-                "reducer": "uniqueValues",
-                "include": fields,
             },
-            "alias": alias,
-            "replaceFields": False,
-        },
-    }
+        }
+
+        for field_name in fields:
+            transformaton["options"]["fields"][field_name] = {
+                "aggregations": ["last"],
+                "operation": "aggregate",
+            }
+
+        return transformaton
 
 
-def organize(
-    exclude_by_name: list[str] = [],
-    index_by_name: list[str] = [],
-    rename_by_name: dict[str, str] = {},
-) -> dict:
-    """Organize fields either by excluding, indexing or renaming them
+    def group_by_geomap(self, group_by: list[str], fields: list[str]) -> dict:
+        """Group by function adapted for geomap. 
 
-    `organize` transformation with `excludeByName`, `indexByName` and `renameByName` options
+        Args:
+            group_by (list[str]): The fields to group by
+            fields (list[str]): The fields to aggregate
 
-    Args:
-        exclude_by_name: list of fields to exclude
-        index_by_name: list of ordered fields. `enumerate` will be used to create the index
-        rename_by_name: dict of fields to rename (`{from: to}`)
+        Returns:
+            dict: Transformation dict
+        """
+        for group_by_field in group_by:
+            if group_by_field in fields:
+                fields.remove(group_by_field)
 
-    Returns:
-        transformation dict
-    """
-    if not any([exclude_by_name, index_by_name, rename_by_name]):
-        raise ValueError("At least one of the parameters must be set")
-
-    return {
-        "id": "organize",
-        "options": {
-            "excludeByName": {name: True for name in exclude_by_name},
-            "indexByName": {name: i for i, name in enumerate(index_by_name)}
-            if len(index_by_name) > 0
-            else {},
-            "renameByName": rename_by_name,
-        },
-    }
-
-
-def filter_by_value(
-    value: str,
-    field_name: str,
-    match_condition: str = "any",
-    filter_type: str = "include",
-    match: str = "equal",
-) -> dict:
-    """Filter by value
-
-    Args:
-        match_condition: can be `any` or `all`
-        match_type: can be `include` or `exclude`
-        match: can be `equal`, `notEqual`, `regex`, `isNull`, `isNotNull` (not sure about this)
-
-    Returns:
-        transformation dict
-    """
-    return {
-        "id": "filterByValue",
-        "options": {
-            "filters": [
-                {
-                    "config": {"id": match, "options": {"value": value}},
-                    "fieldName": field_name,
+        transformaton = {
+            "id": "groupBy",
+            "options": {
+                "fields": {
+                    group_by[1]: {
+                        "aggregations": [],
+                        "operation": "groupby",
+                    },
+                    group_by[0]: {
+                        "aggregations": [],
+                        "operation": "groupby",
+                    },
                 }
-            ],
-            "match": match_condition,
-            "type": filter_type,
-        },
-    }
+            },
+        }
+
+        for field_name in fields:
+            transformaton["options"]["fields"][field_name] = {
+                "aggregations": ["last"],
+                "operation": "aggregate",
+            }
+
+        return transformaton
 
 
-def merge() -> dict:
-    """Merge fields into a single field
+    def group_by_bar_chart(self,group_by: str, fields: list[str]) -> dict:
+        """Group by function adapted for bar chart.
 
-    Args:
-        merge_name: name of the new field
-        fields: list of fields to merge
-        separator: separator to use when merging
+        Args:
+            group_by (str): The field to group by
+            fields (list[str]): The fields to aggregate
 
-    Returns:
-        transformation dict
-    """
-    return {"id": "merge", "options": {}}
+        Returns:
+            dict: Transformation dict
+        """
+        if group_by in fields:
+            fields.remove(group_by)
+
+        transformaton = {
+            "id": "groupBy",
+            "options": {
+                "fields": {
+                    group_by: {
+                        "aggregations": [],
+                        "operation": "groupby",
+                    }
+                }
+            },
+        }
+
+        for field_name in fields:
+            transformaton["options"]["fields"][field_name] = {
+                "aggregations": ["lastNotNull"],
+                "operation": "aggregate",
+            }
+        transformaton["options"]["fields"]["timeStamp"] = {
+            "aggregations": [],
+            "operation": None,
+        }
+
+        return transformaton
+
+
+    def concat_fields(self, alias: str, fields: list[str]) -> dict:
+        """Concatenate all unique values from `fields` into a single field and rename it to `alias`
+        Alias to `calculateField` transformation with mode `reduceRow` and reducer `uniqueValues`
+
+        Args:
+            alias: how to name the new field
+            fields: list of fields to concatenate
+
+        Returns:
+            transformation dict
+        """
+        return {
+            "id": "calculateField",
+            "options": {
+                "mode": "reduceRow",
+                "reduce": {
+                    "reducer": "uniqueValues",
+                    "include": fields,
+                },
+                "alias": alias,
+                "replaceFields": False,
+            },
+        }
+
+
+    def organize(self, 
+        exclude_by_name: list[str] = [],
+        index_by_name: list[str] = [],
+        rename_by_name: dict[str, str] = {},
+    ) -> dict:
+        """Organize fields either by excluding, indexing or renaming them
+
+        `organize` transformation with `excludeByName`, `indexByName` and `renameByName` options
+
+        Args:
+            exclude_by_name: list of fields to exclude
+            index_by_name: list of ordered fields. `enumerate` will be used to create the index
+            rename_by_name: dict of fields to rename (`{from: to}`)
+
+        Returns:
+            transformation dict
+        """
+        if not any([exclude_by_name, index_by_name, rename_by_name]):
+            raise ValueError("At least one of the parameters must be set")
+
+        return {
+            "id": "organize",
+            "options": {
+                "excludeByName": {name: True for name in exclude_by_name},
+                "indexByName": {name: i for i, name in enumerate(index_by_name)}
+                if len(index_by_name) > 0
+                else {},
+                "renameByName": rename_by_name,
+            },
+        }
+
+
+    def filter_by_value(self,
+        value: str,
+        field_name: str,
+        match_condition: str = "any",
+        filter_type: str = "include",
+        match: str = "equal",
+    ) -> dict:
+        """Filter by value
+
+        Args:
+            match_condition: can be `any` or `all`
+            match_type: can be `include` or `exclude`
+            match: can be `equal`, `notEqual`, `regex`, `isNull`, `isNotNull` (not sure about this)
+
+        Returns:
+            transformation dict
+        """
+        return {
+            "id": "filterByValue",
+            "options": {
+                "filters": [
+                    {
+                        "config": {"id": match, "options": {"value": value}},
+                        "fieldName": field_name,
+                    }
+                ],
+                "match": match_condition,
+                "type": filter_type,
+            },
+        }
+
+
+    def merge(self) -> dict:
+        """Merge fields into a single field
+
+        Args:
+            merge_name: name of the new field
+            fields: list of fields to merge
+            separator: separator to use when merging
+
+        Returns:
+            transformation dict
+        """
+        return {"id": "merge", "options": {}}
 

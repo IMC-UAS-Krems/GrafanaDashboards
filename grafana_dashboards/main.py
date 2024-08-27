@@ -11,20 +11,8 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from grafana_dashboards.datasource_gen import generate_datasources
 from grafana_dashboards.var_templating import create_template_variable, generate_templating_variables
-from grafana_dashboards.panel_gen import (
-    generate_bar_chart,
-    generate_xy_chart,
-    generate_time_series,
-    generate_geomap,
-    generate_pie_chart,
-    generate_single_line,
-    generate_calendar,
-    generate_multiline,
-    generate_extreme_values,
-    generate_bullet_graph,
-    generate_fhstp_map,
-    generate_bars_and_bubbles,
-)
+
+from grafana_dashboards.generate_panels import PanelBuilder
 
 from grafana_dashboards.model import Config
 from grafana_dashboards import logging_setup  # will be executed on import  # noqa: F401
@@ -52,18 +40,18 @@ app.add_middleware(
 
 
 panel_mapping: dict[str, Callable] = {
-    "bar_chart": generate_bar_chart,
-    "xy_chart": generate_xy_chart,
-    "timeseries": generate_time_series,
-    "geomap": generate_geomap,
-    "pie_chart": generate_pie_chart,
-    "smartcomm-simpleline-panel": generate_single_line,
-    "smartcomm-calendar-panel": generate_calendar,
-    "smartcomm-multiplelinechart-panel": generate_multiline,
-    "smartcomm-extremevalues-panel": generate_extreme_values,
-    "smartcomm-bulletgraph-panel": generate_bullet_graph,
-    "smartcomm-map-panel": generate_fhstp_map,
-    "smartcomm-minmaxbarchart-panel": generate_bars_and_bubbles,
+    "bar_chart": PanelBuilder.generate_bar_chart,
+    "xy_chart": PanelBuilder.generate_xy_chart,
+    "timeseries": PanelBuilder.generate_time_series,
+    "geomap": PanelBuilder.generate_geo_map,
+    "pie_chart": PanelBuilder.generate_pie_chart,
+    "smartcomm-simpleline-panel": PanelBuilder.generate_single_line,
+    "smartcomm-calendar-panel": PanelBuilder.generate_calendar,
+    "smartcomm-multiplelinechart-panel": PanelBuilder.generate_multi_line,
+    "smartcomm-extremevalues-panel": PanelBuilder.generate_extreme_values,
+    "smartcomm-bulletgraph-panel": PanelBuilder.generate_bullet_graph,
+    "smartcomm-map-panel": PanelBuilder.generate_fhsp_map,
+    "smartcomm-minmaxbarchart-panel": PanelBuilder.generate_bars_and_bubbles,
 }
 
 
@@ -81,6 +69,7 @@ async def generate_file(config: Config) -> GrafanaModel | JSONResponse:
     """
     template = env.get_template("config.json")
     panels = []
+    datasource = config.data.sources[config.data.default_source]
 
     try:
         config_panels = config.application.panels

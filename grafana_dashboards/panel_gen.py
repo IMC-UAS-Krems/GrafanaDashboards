@@ -11,15 +11,8 @@ import json
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from grafana_dashboards.trasformations import (
-    concat_fields,
-    filter_by_value,
-    group_by,
-    group_by_bar_chart,
-    organize,
-    merge,
-    group_by_geomap,
-)
+from grafana_dashboards.trasformations import TransformationBuilder
+
 from grafana_dashboards.model import (
     BarChart,
     BarsBubbles,
@@ -47,6 +40,8 @@ from grafana_dashboards.field_generators import (
     generate_fiware_field,
     generate_time_field_for_single_line,
     Coordinates,
+    generate_special_value_field_for_dataskope,
+    bar_field,
 )
 
 
@@ -55,6 +50,8 @@ env = Environment(
     autoescape=select_autoescape("json"),
 )
 env.filters["jsonify"] = json.dumps
+
+transformations_class = TransformationBuilder()
 
 
 def generate_grid_pos(col: int, panel_type: str) -> dict:
@@ -238,50 +235,50 @@ def generate_target_dataskop_singleline(
         )
     )
 
-def generate_special_value_field_for_dataskope(
-    field_name: str,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
-    value_name: str,
-) -> dict:
-    data_type = types_resolver.resolve_dataskop(
-        data_source.uri,
-        data_source.config.token,
-        data_source.config.measurements[field_name],
-    )
+# def generate_special_value_field_for_dataskope(
+#     field_name: str,
+#     types_resolver: TypesResolver,
+#     data_source: Datasource,
+#     value_name: str,
+# ) -> dict:
+#     data_type = types_resolver.resolve_dataskop(
+#         data_source.uri,
+#         data_source.config.token,
+#         data_source.config.measurements[field_name],
+#     )
 
-    return json.loads(
-        env.get_template("field.json").render(
-            path=f"$[*].measurementResults.${data_type}(value)",
-            language="jsonata",
-            name=value_name,
-            type=data_type,
-        )
-    )
+#     return json.loads(
+#         env.get_template("field.json").render(
+#             path=f"$[*].measurementResults.${data_type}(value)",
+#             language="jsonata",
+#             name=value_name,
+#             type=data_type,
+#         )
+#     )
 
 
-def bar_field(
-    field_name: str,
-    types_resolver: TypesResolver,
-    data_source: Datasource,
-    value_name: str,
-) -> dict:
-    data_type = types_resolver.resolve_dataskop(
-        data_source.uri,
-        data_source.config.token,
-        data_source.config.measurements[field_name],
-    )
+# def bar_field(
+#     field_name: str,
+#     types_resolver: TypesResolver,
+#     data_source: Datasource,
+#     value_name: str,
+# ) -> dict:
+#     data_type = types_resolver.resolve_dataskop(
+#         data_source.uri,
+#         data_source.config.token,
+#         data_source.config.measurements[field_name],
+#     )
 
-    field_name = field_name.split("_")[0]
+#     field_name = field_name.split("_")[0]
 
-    return json.loads(
-        env.get_template("field.json").render(
-            path=f'$[*].measurementResults.($count(value) > 0 ? "{value_name}" :  "{value_name}")',
-            language="jsonata",
-            name="Fields",
-            type="string",
-        )
-    )
+#     return json.loads(
+#         env.get_template("field.json").render(
+#             path=f'$[*].measurementResults.($count(value) > 0 ? "{value_name}" :  "{value_name}")',
+#             language="jsonata",
+#             name="Fields",
+#             type="string",
+#         )
+#     )
 
     # also there is a specific order in which the queries need to be called
     # that is why we have so many if statements
@@ -417,7 +414,7 @@ def generate_bar_chart_fiware(
         dict: The fields of the panel as it is in barchart.json
     """
 
-    template = env.get_template("barchart.json")
+    template = env.get_template("grafana/barchart.json")
     fields = []
     transformations = []
     extra_data = []
@@ -428,16 +425,16 @@ def generate_bar_chart_fiware(
     for field_name in config.traces:
         generated_fields, group = generate_field(field_name, type_resolver, data_source)
         if group:
-            transformations.append(concat_fields(group[0], group[1:]))
-            transformations.append(organize(exclude_by_name=group[1:]))
+            transformations.append(transformations_class.concat_fields(group[0], group[1:]))
+            transformations.append(transformations_class.organize(exclude_by_name=group[1:]))
             extra_data.extend(group[1:])
         fields.extend(generated_fields)
 
     config.traces.extend(extra_data)
 
-    transformations.append(group_by("id", config.traces))
+    transformations.append(transformations_class.group_by("id", config.traces))
     transformations.append(
-        organize(
+        transformations_class.organize(
             rename_by_name={
                 f"{name} (last)": name for name in config.traces if name != "id"
             },
@@ -492,7 +489,7 @@ def generate_bar_chart_dataskop(
         dict: The fields of the panel as it is in barchart.json
     """
 
-    template = env.get_template("barchart.json")
+    template = env.get_template("grafana/barchart.json")
     targets = []
     transformations = []
 
@@ -511,9 +508,9 @@ def generate_bar_chart_dataskop(
             )
         )
 
-    transformations.append(merge())
+    transformations.append(transformations_class.merge())
     # transformations.append(group_by("Fields", config.traces))
-    transformations.append(group_by_bar_chart("Fields", config.traces))
+    transformations.append(transformations_class.group_by_bar_chart("Fields", config.traces))
 
     return json.loads(
         template.render(
@@ -564,7 +561,7 @@ def generate_pie_chart_fiware(
     Returns:
         dict: The fields of the panel as it is in piechart.json
     """
-    template = env.get_template("piechart.json")
+    template = env.get_template("grafana/piechart.json")
     fields = []
     transformations = []
 
@@ -572,7 +569,7 @@ def generate_pie_chart_fiware(
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
 
-    transformations.append(filter_by_value("$id_filter", "id"))
+    # transformations.append(filter_by_value("$id_filter", "id"))
 
     targets = [
         json.loads(
@@ -619,7 +616,7 @@ def generate_pie_chart_dataskop(
     Returns:
         dict: The fields of the panel as it is in piechart.json
     """
-    template = env.get_template("piechart.json")
+    template = env.get_template("grafana/piechart.json")
     targets = []
     transformations = []
 
@@ -671,7 +668,7 @@ def generate_xy_chart_dataskop(
     data_source: Datasource,
     title: str,
 ) -> dict:
-    template = env.get_template("xy.json")
+    template = env.get_template("grafana/xy.json")
     targets = []
     transformations = []
 
@@ -689,7 +686,7 @@ def generate_xy_chart_dataskop(
             )
         )
 
-    transformations.append(merge())
+    transformations.append(transformations_class.merge())
 
     return json.loads(
         template.render(
@@ -724,7 +721,7 @@ def generate_xy_chart_fireware(
     Returns:
         dict: The fields of the panel as it is in xy.json
     """
-    template = env.get_template("xy.json")
+    template = env.get_template("grafana/xy.json")
     fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
@@ -743,7 +740,7 @@ def generate_xy_chart_fireware(
         )
     )
 
-    transformations.append(filter_by_value("$id_filter", "id"))
+    # transformations.append(filter_by_value("$id_filter", "id"))
     return json.loads(
         template.render(
             grid_pos=generate_grid_pos(id, config.type),
@@ -788,7 +785,7 @@ def generate_time_series_fiware(
     Returns:
         dict: The fields of the panel as it is in timeseries.json
     """
-    template = env.get_template("timeseries.json")
+    template = env.get_template("grafana/timeseries.json")
     fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
@@ -797,7 +794,7 @@ def generate_time_series_fiware(
         generated_fields, _ = generate_field(field_name, type_resolver, data_source)
         fields.extend(generated_fields)
 
-    transformations.append(filter_by_value("$id_filter", "id"))
+    # transformations.append(filter_by_value("$id_filter", "id"))
 
     fiware_template = json.loads(
         fiware_template.render(
@@ -840,7 +837,7 @@ def generate_time_series_dataskop(
     Returns:
         dict: The fields of the panel as it is in timeseries.json
     """
-    template = env.get_template("timeseries.json")
+    template = env.get_template("grafana/timeseries.json")
     targets = []
     transformations = []
 
@@ -895,7 +892,7 @@ def generate_geomap_dataskop(
     data_source: Datasource,
     title: str,
 ) -> dict:
-    template = env.get_template("geomap.json")
+    template = env.get_template("grafana/geomap.json")
     targets = []
     transformations = []
 
@@ -914,8 +911,8 @@ def generate_geomap_dataskop(
             )
         )
 
-    transformations.append(merge())
-    transformations.append(group_by_geomap(["longitude", "latitude"], config.data))
+    transformations.append(transformations_class.merge())
+    transformations.append(transformations_class.group_by_geomap(["longitude", "latitude"], config.data))
 
     return json.loads(
         template.render(
@@ -954,7 +951,7 @@ def generate_geomap_fiware(
     Returns:
         dict: The fields of the panel as it is in geomap.json
     """
-    template = env.get_template("geomap.json")
+    template = env.get_template("grafana/geomap.json")
     fiware_template = env.get_template("fiware.json")
     fields = []
     transformations = []
@@ -968,8 +965,8 @@ def generate_geomap_fiware(
             continue
         generated_fields, group = generate_field(field_name, type_resolver, data_source)
         if group:
-            transformations.append(concat_fields(group[0], group[1:]))
-            transformations.append(organize(exclude_by_name=group[1:]))
+            transformations.append(transformations_class.concat_fields(group[0], group[1:]))
+            transformations.append(transformations_class.organize(exclude_by_name=group[1:]))
             extra_data.extend(group[1:])
         fields.extend(generated_fields)
 
@@ -982,9 +979,9 @@ def generate_geomap_fiware(
 
     config.data.extend(extra_data)
 
-    transformations.append(group_by("id", config.data))
+    transformations.append(transformations_class.group_by("id", config.data))
     transformations.append(
-        organize(
+        transformations_class.organize(
             rename_by_name={
                 f"{name} (last)": name for name in config.data if name != "id"
             },
@@ -1045,7 +1042,7 @@ def generate_single_line_fiware(
         dict: The fields of the panel as it is in single_line.json
     """
     fiware = env.get_template("fiware.json")
-    single_line = env.get_template("single_line.json")
+    single_line = env.get_template("fhsp/single_line.json")
 
     fields = []
     transformations = []
@@ -1058,9 +1055,9 @@ def generate_single_line_fiware(
             generated_fields, _ = generate_field(field_name, type_resolver, data_source)
             fields.extend(generated_fields)
 
-    transformations.append(group_by("dateObserved", config.traces))
+    transformations.append(transformations_class.group_by("dateObserved", config.traces))
     transformations.append(
-        organize(
+        transformations_class.organize(
             rename_by_name={
                 f"{name} (last)": name
                 for name in config.traces
@@ -1116,7 +1113,7 @@ def generate_single_line_dataskop(
     Returns:
         dict: The fields of the panel as it is in single_line.json
     """
-    single_line = env.get_template("single_line.json")
+    single_line = env.get_template("fhsp/single_line.json")
 
     transformations = []
     targets = []
@@ -1227,7 +1224,7 @@ def generate_calendar(
     Returns:
         dict: The fields of the panel as it is in calendar.json
     """
-    template = env.get_template("calendar.json")
+    template = env.get_template("fhsp/calendar.json")
     targets = []
 
     locations = config.locations
@@ -1286,7 +1283,7 @@ def generate_extreme_values(
     Returns:
         dict: The fields in the pannel as it is in extreme_values.json
     """
-    template = env.get_template("extreme_values.json")
+    template = env.get_template("fhsp/extreme_values.json")
     targets = []
 
     locations = config.locations
@@ -1349,7 +1346,7 @@ def generate_multiline(
     Returns:
         dict: The fields of the panel as it is in multiline.json
     """
-    template = env.get_template("multiline.json")
+    template = env.get_template("fhsp/multiline.json")
     targets = []
 
     locations = config.locations
@@ -1422,7 +1419,7 @@ def generate_bullet_graph(
     Returns:
         dict: The fields of the panel as it is in bulletpanel.json
     """
-    template = env.get_template("bulletpanel.json")
+    template = env.get_template("fhsp/bulletpanel.json")
     targets = []
 
     locations = config.locations
@@ -1497,7 +1494,7 @@ def generate_fhstp_map(
     Returns:
         dict: The fields of the panel as it is in bulletpanel.json
     """
-    template = env.get_template("map_fhstp.json")
+    template = env.get_template("fhsp/map_fhstp.json")
     targets = []
 
     if "dateObserved" in config.traces:
@@ -1569,7 +1566,7 @@ def generate_bars_and_bubbles(
     Returns:
         dict: The fields of the panel as it is in bulletpanel.json
     """
-    template = env.get_template("bars_bubbles.json")
+    template = env.get_template("fhsp/bars_bubbles.json")
     targets = []
 
     locations = config.locations

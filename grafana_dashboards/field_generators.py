@@ -15,6 +15,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .model import Datasource
 from .types_resolver import Keys, TypesResolver
+# from .panel_gen import generate_special_value_field_for_dataskope, bar_field
 
 
 env = Environment(
@@ -28,6 +29,181 @@ class Coordinates(Enum):
     LONGITUDE = {"name": "lon", "index": 0}
     LATITUDE = {"name": "lat", "index": 1}
 
+def generate_grid_pos(col: int, panel_type: str) -> dict:
+    """This function generated the grid position for a panel
+    h -> height of the panel
+    w -> width of the panel
+    x -> x position, = col * w
+    y -> y position, = col * h
+    Depending on the panel type, the height and width are different.
+    For the moment, the only panel that has a different height and width is the calendar panel.
+
+    Args:
+        col (int): Used the id of the panel
+
+    Returns:
+        dict: grid position of the pane as it is in grid_pos.json
+    """
+    template = env.get_template("grid_pos.json")
+
+    if panel_type == "smartcomm-calendar-panel":
+        h = 32
+        w = 24
+        x = (col % 2) * 24
+    elif panel_type == "smartcomm-multiplelinechart-panel":
+        h = 16
+        w = 24
+        x = (col % 2) * 24
+    elif panel_type == "smartcomm-extremevalues-panel":
+        h = 16
+        w = 12
+        x = (col % 2) * 12
+    elif panel_type == "smartcomm-bulletgraph-panel":
+        h = 10
+        w = 24
+        x = (col % 2) * 24
+    else:
+        h = 8
+        w = 12
+        x = (col % 2) * 12
+
+    return json.loads(
+        template.render(
+            h=h,
+            w=w,
+            x=x,
+            y=(col // 2) * 8,  # assuming that other panels are 8 high
+        )
+    )
+
+def generate_special_value_field_for_dataskope(
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+    value_name: str,
+) -> dict:
+    data_type = types_resolver.resolve_dataskop(
+        data_source.uri,
+        data_source.config.token,
+        data_source.config.measurements[field_name],
+    )
+
+    return json.loads(
+        env.get_template("field.json").render(
+            path=f"$[*].measurementResults.${data_type}(value)",
+            language="jsonata",
+            name=value_name,
+            type=data_type,
+        )
+    )
+
+
+def bar_field(
+    field_name: str,
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+    value_name: str,
+) -> dict:
+    data_type = types_resolver.resolve_dataskop(
+        data_source.uri,
+        data_source.config.token,
+        data_source.config.measurements[field_name],
+    )
+
+    field_name = field_name.split("_")[0]
+
+    return json.loads(
+        env.get_template("field.json").render(
+            path=f'$[*].measurementResults.($count(value) > 0 ? "{value_name}" :  "{value_name}")',
+            language="jsonata",
+            name="Fields",
+            type="string",
+        )
+    )
+
+def generate_target_dataskop(
+    field_name: str,  # example: "O3"
+    index_field: int,  # between 0 and 3
+    types_resolver: TypesResolver,
+    data_source: Datasource,
+    panel_type: str,
+    hide: bool = False,
+    location: str | None = None,  # example: "Pza. de España"
+    with_time: bool = True,
+    geomap: bool = False,
+    special_value: bool = False,
+    bar: bool = False,
+    is_fhstp: bool = True,
+) -> dict:
+    """This function generates the target for multiple smartcomm panels.
+    Each target is a group of queries for a specific location and a specific field.
+    Currently the plugin accepts only 4 fields: "Luftfeuchtigkeit", "Temperatur", "Feinstaub", "Luftdruck"
+    Because we cannot have our own attributes we mask them with the ones that are available in the plugin.
+
+    Args:
+        location (str): The station name
+        field_name (str): The field name that we want to query
+        index_field (int): The index of the field, needed for extreme values panel
+        data_source (Datasource): Used to generate the field and the type of the query
+        hide (bool, optional): It is used as a fix for the bullet graph panel. Defaults to False.
+
+    Returns:
+        dict: The fields of the panel as it is in target.json
+    """
+    attributes = ["Temperatur", "Luftfeuchtigkeit", "Feinstaub", "Luftdruck"]
+    dataskop = env.get_template("dataskop.json")
+    fields = []
+
+    # because the label of the target is location-attribute we need to connect them
+    # in the new version we have pannels which expect dash but others expect underscore
+    if is_fhstp:
+        ref_id = (
+            location + "_" + attributes[index_field]
+            if location
+            else attributes[index_field]
+        )
+    else:
+        ref_id = field_name
+
+    if special_value:
+        fields.append(
+            generate_special_value_field_for_dataskope(
+                field_name,
+                types_resolver,
+                data_source,
+                attributes[index_field] if is_fhstp else field_name,
+            )
+        )
+        if bar:
+            fields.append(
+                bar_field(
+                    field_name,
+                    types_resolver,
+                    data_source,
+                    attributes[index_field] if is_fhstp else field_name,
+                )
+            )
+    else:
+        fields.append(
+            generate_value_field_for_dataskope(field_name, types_resolver, data_source)
+        )
+
+    if with_time:
+        fields.append(generate_time_field_for_dataskope())
+
+    if geomap:
+        fields.append(generate_coordinate_field_dataskope("longitude"))
+        fields.append(generate_coordinate_field_dataskope("latitude"))
+
+    return json.loads(
+        dataskop.render(
+            datasource_uid=data_source.uid,
+            fields=fields,
+            hide=hide,
+            ref_id=ref_id,
+            measurement_id=data_source.config.measurements[field_name],
+        )
+    )
 
 def generate_time_field_for_single_line(field_name: str) -> dict:
     """This function is for the moment only for the single line panel.
